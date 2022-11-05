@@ -2,6 +2,9 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 
+/**
+ * 관심사 분리를 위한 인위적인 View 클래스 입니다.
+ */
 public class OthelloView {
     private final JLabel k = new JLabel("1");
     private final int[][] mat = new int[8][8];
@@ -13,6 +16,9 @@ public class OthelloView {
     private int game = 0;
     private boolean shown = false;
 
+    /**
+     * 생성자
+     */
     public OthelloView() {
         JFrame f = this.initFrame();
 
@@ -56,6 +62,11 @@ public class OthelloView {
         initialise();
     }
 
+    /**
+     * 프레임 객체를 초기화 합니다.
+     *
+     * @return 프레임 객체
+     */
     public JFrame initFrame() {
         JFrame f = new JFrame("Othello PvP");
         f.getContentPane().setBackground(new Color(80, 48, 12));
@@ -67,6 +78,11 @@ public class OthelloView {
         return f;
     }
 
+    /**
+     * 보드(버튼)들을 초기화 합니다.
+     *
+     * @return 버튼들
+     */
     public JButton[][] initButton() {
         this.jb = new JButton[8][8];
 
@@ -87,6 +103,12 @@ public class OthelloView {
         return jb;
     }
 
+
+    /**
+     * JLabel 객체들을 초기화 합니다.
+     *
+     * @return JLabel 객체들
+     */
     public JLabel initStat() {
         this.jStat = new JLabel("");
         jStat.setOpaque(true);
@@ -101,6 +123,11 @@ public class OthelloView {
         return jStat;
     }
 
+    /**
+     * 노트들을 초기화 합니다.
+     *
+     * @return 노트들
+     */
     public JLabel initNote() {
         this.jNote = new JLabel("");
         jNote.setOpaque(true);
@@ -115,6 +142,11 @@ public class OthelloView {
         return jNote;
     }
 
+    /**
+     * 패스 버튼을 초기화 합니다.
+     *
+     * @return 패스버튼
+     */
     public JButton initPassButton() {
         this.jPass = new JButton("");
         jPass.setMargin(new Insets(0, 0, 0, 0));
@@ -133,6 +165,11 @@ public class OthelloView {
         return jPass;
     }
 
+    /**
+     * 쇼 버튼들 초기화 합니다.
+     *
+     * @return 쇼버튼
+     */
     public JButton initShowButton() {
         this.jShow = new JButton("");
         jShow.setMargin(new Insets(0, 0, 0, 0));
@@ -151,12 +188,22 @@ public class OthelloView {
         return jShow;
     }
 
+    /**
+     * 패스할때 계산을 합니다.
+     */
     private void pass() {
         int z = Integer.parseInt(k.getText());
         if ((z % 2 != 0 && noValid(1, 0)) || (z % 2 == 0 && noValid(2, 0))) k.setText(String.valueOf(z + 1));
         else jNote.setText((jNote.getText()).substring(0, 12) + "  [Valid move possible]");
     }
 
+    /**
+     * 앞으로 둘 수가 유효한지 검사를 합니다.
+     *
+     * @param p
+     * @param r
+     * @return 유효한지에 대해 반환
+     */
     private boolean noValid(int p, int r) {
         int i, j, x, y, m, n, c;
         int q = 3 - p;
@@ -246,6 +293,9 @@ public class OthelloView {
         return ret;
     }
 
+    /**
+     * 앞으로의 경우의 수를 보여주는 메서드.
+     */
     private void show() {
         int z = Integer.parseInt(k.getText());
         /*boolean val =*/
@@ -254,6 +304,9 @@ public class OthelloView {
         jShow.setText("HIDE MOVE");
     }
 
+    /**
+     * 앞으로 둘 수 있는 경우의 수를 감추는 메서드
+     */
     private void hide() {
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++)
@@ -263,6 +316,13 @@ public class OthelloView {
     }
 
 
+    /**
+     * 한 수를 두었을 때 처리를 담당하는 함수
+     *
+     * @param x 가로위치
+     * @param y 세로위치
+     * @param z 해당 위치가 흑인지 백인지
+     */
     private void click(int x, int y, int z) {
         int f = mat[x][y];
         if (z % 2 != 0) {
@@ -289,6 +349,14 @@ public class OthelloView {
         count();
     }
 
+    /**
+     * 뒤집는 효과를 내는 함수
+     *
+     * @param x 가로위치
+     * @param y 세로위치
+     * @param z 해당 위치가 흑인지 백인지
+     * @return 결과값
+     */
     private int flip(int x, int y, int z) {
         int i, j, m, n, d = 0;
         for (i = 0; i < 8; i++) {
@@ -494,6 +562,9 @@ public class OthelloView {
         return d;
     }
 
+    /**
+     * 바둑판을 초기 값으로 세팅하는 메서드
+     */
     private void initialise() {
         jb[3][3].setForeground(Color.white);
         jb[3][3].setText("⚫");
@@ -512,6 +583,9 @@ public class OthelloView {
         mat[4][3] = 1;
     }
 
+    /**
+     * 결과를 세는 함수
+     */
     private void count() {
         int b = 0;
         int w = 0;
