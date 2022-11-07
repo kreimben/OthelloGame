@@ -5,6 +5,7 @@ import Server.Response.GeneralResponse;
 
 import java.io.*;
 
+// 서버와 클라이언트 통신을 통일 시키기 위해 이 객체를 이용해 Response와 Request를 실행합니다.
 public class InternetStream {
 
     private ObjectInputStream is = null;
@@ -20,10 +21,12 @@ public class InternetStream {
         }
     }
 
+    // 대상 클라이언트에게 response객체를 보냅니다.
     public void send(GeneralResponse res) throws IOException {
         os.writeObject(res);
     }
 
+    // 대상 클라이언트로부터 request를 받습니다.
     public GeneralRequest receive() throws IOException, ClassNotFoundException {
         return (GeneralRequest) is.readObject();
     }

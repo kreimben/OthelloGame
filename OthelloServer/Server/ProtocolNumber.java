@@ -1,5 +1,6 @@
 package Server;
 
+// 프로토콜을 정의한 enum입니다. 통신에 직접적으로 쓰이지 않습니다.
 public enum ProtocolNumber {
     /**
      * 100 좌포를 이용해 플레이 함 request. c -> s

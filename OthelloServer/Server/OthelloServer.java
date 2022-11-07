@@ -41,7 +41,7 @@ public class OthelloServer extends JFrame {
         scrollPane.setViewportView(textArea);
 
         // 포트 넘버를 받는 레이블
-        JLabel portNumberLabel = new JLabel("Port Number");
+        JLabel portNumberLabel = new JLabel("포트 번호");
         contentPane.add(portNumberLabel);
 
         // 포트 넘버를 받는 text field
@@ -52,7 +52,7 @@ public class OthelloServer extends JFrame {
         contentPane.add(portNumberTextField);
 
         // Start Server button.
-        JButton startServerButton = new JButton("Server listening");
+        JButton startServerButton = new JButton("서버 듣기 시작");
         startServerButton.addActionListener(e -> {
             try {
                 // Create socket.
@@ -61,18 +61,18 @@ public class OthelloServer extends JFrame {
                 manager.start();
             } catch (NumberFormatException ex) {
                 ex.printStackTrace();
-                printTextToServer("Please input valid number.");
+                printTextToServer("숫자를 써주세요.");
             }
 
-            printTextToServer("Othello Server Running...");
-            startServerButton.setText("Othello Server Running..");
+            printTextToServer("오셀로 서버 시작...");
+            startServerButton.setText("서버 가동 중..");
             startServerButton.setEnabled(false);
             portNumberTextField.setEnabled(false);
         });
         contentPane.add(startServerButton);
 
         // 방 이름을 받는 레이블
-        JLabel roomNameLabel = new JLabel("Room Name");
+        JLabel roomNameLabel = new JLabel("새로 만들 방 이름");
         contentPane.add(roomNameLabel);
 
         // 방 이름을 받는 Text Field
@@ -83,7 +83,7 @@ public class OthelloServer extends JFrame {
         contentPane.add(roomNameTextField);
 
         // Create Room button.
-        JButton createRoomButton = new JButton("Create Room");
+        JButton createRoomButton = new JButton("방 만들기");
         createRoomButton.addActionListener(e -> {
             var roomName = roomNameTextField.getText();
             printTextToServer("\n새로운 방을 만들고 있습니다...");
@@ -118,7 +118,7 @@ public class OthelloServer extends JFrame {
         });
     }
 
-
+    // 서버에 직접적으로 표시될 문구를 따로 모아 보여줍니다.
     public void printTextToServer(String str) {
         textArea.append(str + "\n");
         textArea.setCaretPosition(textArea.getText().length());

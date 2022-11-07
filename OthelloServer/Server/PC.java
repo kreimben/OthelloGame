@@ -15,6 +15,7 @@ public class PC {
         return instance;
     }
 
+    // 프로토콜을 정의한 enum을 만들었는데 그걸 int로 바꿔줄 함수와 클래스 입니다.
     public int convert(ProtocolNumber p) {
         switch (p) {
             case PLAY_WITH_COORDINATE_100:

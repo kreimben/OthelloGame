@@ -14,12 +14,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+// 방을 관리하는 객체로써 서버당 하나의 인스턴스만 존재해야합니다.
 class RoomManager extends Thread {
 
-    private static final int BUF_LEN = 128;
-    public static Map<String, ArrayList<Person>> rooms;
-    public static ServerSocket serverSocket;
-    private final ArrayList<Person> clientList = new ArrayList();
+    private static final int BUF_LEN = 128; // 예제코드에서 가져온거라 없어질 수도 있습니다.
+    public static Map<String, ArrayList<Person>> rooms; // 방 이름과 해당 방에 접속한 클라이언트를 기록합니다.
+    public static ServerSocket serverSocket; // port number로 만든 서버 소켓 객체입니다.
+    private final ArrayList<Person> clientList = new ArrayList(); // 현재 접속한 모든 클라이언트를 기록합니다.
 
     RoomManager(int port) {
         try {
@@ -30,6 +31,7 @@ class RoomManager extends Thread {
         RoomManager.rooms = new HashMap<>();
     }
 
+    // static 함수로써 새로운 방을 만들기 위해 쓰입니다.
     public static void makeNewRoom(String roomName) throws AlreadyRoomExistsException {
         if (RoomManager.rooms.get(roomName) != null) {
             throw new AlreadyRoomExistsException("Already this room exists.");
@@ -78,7 +80,7 @@ class RoomManager extends Thread {
     }
 
     /*
-     * Broadcast to all the clients. (whether it's player or observer)
+     * player이건 observer이건 모두에게 메세지를 보냅니다.
      */
     public void broadcast(int code, Optional<String> message) {
         for (Person person : clientList) {
@@ -88,6 +90,7 @@ class RoomManager extends Thread {
 
 
     // Windows 처럼 message 제외한 나머지 부분은 NULL 로 만들기 위한 함수
+    // 예제코드 레거시라서 언제 없어질지 모릅니다.
     public byte[] makePacket(String msg) {
         byte[] packet = new byte[BUF_LEN];
 
@@ -102,7 +105,7 @@ class RoomManager extends Thread {
         return packet;
     }
 
-
+    // 예제코드 레거시. 언제 수정되거나 없어질지 모릅니다.
     public void login(Person person) {
         OthelloServer.getInstance().printTextToServer(
                 "새로운 참가자 " + person.getUserName() + " 입장.\n"
@@ -114,6 +117,7 @@ class RoomManager extends Thread {
         );
     }
 
+    // 예제코드 레거시. 언제 수정되거나 없어질지 모릅니다.
     public void logout(Person person) {
         clientList.remove(person);
         String message = "[" + person.getUserName() + "]님이\n ";
@@ -125,6 +129,7 @@ class RoomManager extends Thread {
         OthelloServer.getInstance().printTextToServer("현재 참가자 수 " + clientList.size() + "\n");
     }
 
+    // 방에 입장하는 함수입니다. 언제 수정되거나 없어질지 모릅니다.
     public void getInRoom(String roomName, Person person) {
         var list = RoomManager.rooms.get(roomName);
         list.add(person);
