@@ -2,37 +2,20 @@
 Othello PvP (2-Player) Game Application. This repository contains a Windows application, created in Java using Swing and AWT, for playing the Othello game, a simple game that played on an 8 by 8 checkered board with 64 double-sided black and white discs. The game is easy to learn, but it takes time to master and develop winning strategies.
 
 -----------------------------------------------------------------------------------------------
+## protocol
+
+* 100 좌포를 이용해 플레이 함 request. c -> s
+* 101 서버로부터 메세지를 받음 response. s -> c
+* 200 방을 만듬 request. c -> s
+* 201 방이 만들어짐 response. s -> c
+* 202 방에 입장 request. c -> s
+* 203 접속 종료 request. c -> s
+
+-----------------------------------------------------------------------------------------------
 
 Screenshot from the Application:
 -----------------------------------------------------------------------------------------------
 ![Screenshot-Othello-Game](https://user-images.githubusercontent.com/76199286/152112877-cfcc2ad2-0ee4-43c4-aba8-25820666d244.png)
-
------------------------------------------------------------------------------------------------
-
-OTHELLO PVP - Java Application for Windows PC
------------------------------------------------------------------------------------------------
-
-Game Application : Developed by Soumyadeep Pal
-
-Developer GitHub : https://www.github.com/realspal
-
-Developer LinkedIn : https://linkedin.com/in/realspal
-
-Game Rules : Based on the original Othello Game
-
------------------------------------------------------------------------------------------------
-
-About This Repository:
------------------------------------------------------------------------------------------------
-
-This repository contains a Windows application for playing the Othello game in 2 player (player vs player or PvP) mode, created in Java using Swing and AWT. This version is capable of invalidating illegal moves and declaring winner automatically.
-
------------------------------------------------------------------------------------------------
-
-About The Game Othello (Source - https://www.wikihow.com/Play-Othello):
------------------------------------------------------------------------------------------------
-
-Othello is a simple game that you play on an 8 by 8 in (20 by 20 cm) checkered board with 64 double-sided black and white discs. The game is easy to learn, but it takes time to master and develop your strategies for winning the game.
 
 -----------------------------------------------------------------------------------------------
 
@@ -62,23 +45,5 @@ If White plays the bottom left option and flips one disc:
 Players alternate taking turns. If a player does not have any valid moves, play passes back to the other player. When neither player can move, the game ends. A game of Othello may end before the board is completely filled.
 
 The player with the most discs on the board at the end of the game wins. If both players have the same number of discs, then the game is a draw.
-
------------------------------------------------------------------------------------------------
-
-Message From Developer (Date: 2nd February, 2022):
------------------------------------------------------------------------------------------------
-
-I hope you will have fun playing Othello and devising your own strategies. For more information, you can contact me via LinkedIn (https://www.linkedin.com/in/realspal). Thanks for reading. With regards,
-
-Soumyadeep Pal.
-
------------------------------------------------------------------------------------------------
-
-References (Source - https://www.eothello.com/#how-to-play):
------------------------------------------------------------------------------------------------
-
-1) Basic Othello Strategy - https://www.eothello.com
-2) World Othello Federation - https://www.worldothello.org
-3) _Othello: a minute to learn... a lifetime to master_ by Brian Rose - https://www.eothello.com/pdf/othello-book-Brian-Rose.pdf
 
 -----------------------------------------------------------------------------------------------
