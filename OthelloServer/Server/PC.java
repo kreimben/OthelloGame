@@ -30,6 +30,8 @@ public class PC {
                 return 202;
             case QUIT_CONNECT_203:
                 return 203;
+            case ENTERED_ROOM_204:
+                return 204;
             default:
                 return 0;
         }
