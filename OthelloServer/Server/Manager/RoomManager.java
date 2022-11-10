@@ -54,26 +54,33 @@ public class RoomManager extends Thread {
          */
         while (true) {
             try {
-                OthelloServer.getInstance().printTextToServer("새로운 참가자를 기다리는 중...\n");
+                OthelloServer.getInstance().printTextToServer("새로운 참가자를 기다리는 중...");
                 var socket = serverSocket.accept();
+                // client에서는 서버에 접속하자마자 어떤 방 이름에 들어갈 것인지 `message`에 넣어줘야 합니다.
+                var ois = new ObjectInputStream(socket.getInputStream());
+                GeneralRequest req = (GeneralRequest) ois.readObject();
+                String roomName = req.message.get();
                 OthelloServer.getInstance().printTextToServer("새로운 참가자 from " + socket);
+                OthelloServer.getInstance().printTextToServer(roomName + "방에 들어갑니다.");
 
                 Person person;
 
-                if (clientList.size() < 2) {
+                if (rooms.get(roomName).size() < 2) {
                     /*
                     2명까지는 플레이어로 인식
                      */
-                    person = new Player(socket);
+                    person = new Player(socket, this);
                 } else {
                     /*
                     2명 이후부터는 옵저버(관찰자)로 인식
                      */
-                    person = new Observer(socket);
+                    person = new Observer(socket, this);
                 }
 
+                person.roomName = roomName; // 모든 `person`객체에도 `roomName`을 입력해줌.
                 clientList.add(person); // 일단 모든 접속자들은 `clientList`에 집어 넣음.
-                person.start(); // TODO: Fix design.
+                this.getInRoom(roomName, person); // `roomName`에 따른 방에 `person`을 집어 넣음.
+                person.start();
 
                 OthelloServer.getInstance().printTextToServer("현재 참가자 수 " + clientList.size());
 
