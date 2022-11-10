@@ -1,7 +1,6 @@
 package Server;
 
 import Server.Request.GeneralRequest;
-import Server.Response.GeneralResponse;
 
 import java.io.*;
 
@@ -15,6 +14,7 @@ public class InternetStream {
         try {
             this.is = new ObjectInputStream(is);
             this.os = new ObjectOutputStream(os);
+            this.os.flush();
         } catch (Exception e) {
             OthelloServer.getInstance().printTextToServer("Cannot make OthelloServer.InternetStream");
             e.printStackTrace();
@@ -22,7 +22,7 @@ public class InternetStream {
     }
 
     // 대상 클라이언트에게 response객체를 보냅니다.
-    public void send(GeneralResponse res) throws IOException {
+    public void send(Object res) throws IOException {
         os.writeObject(res);
     }
 

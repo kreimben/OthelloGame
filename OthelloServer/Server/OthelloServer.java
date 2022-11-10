@@ -1,6 +1,7 @@
 package Server;
 
 import Server.Exceptions.AlreadyRoomExistsException;
+import Server.Manager.RoomManager;
 
 import javax.swing.*;
 import java.awt.*;
