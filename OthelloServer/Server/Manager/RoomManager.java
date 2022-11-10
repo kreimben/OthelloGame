@@ -1,12 +1,17 @@
-package Server;
+package Server.Manager;
 
 import Server.Exceptions.AlreadyRoomExistsException;
+import Server.OthelloServer;
+import Server.PC;
+import Server.ProtocolNumber;
+import Server.Request.GeneralRequest;
 import Server.Response.GeneralResponse;
 import Server.person.Observer;
 import Server.person.Person;
 import Server.person.Player;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -15,14 +20,14 @@ import java.util.Map;
 import java.util.Optional;
 
 // 방을 관리하는 객체로써 서버당 하나의 인스턴스만 존재해야합니다.
-class RoomManager extends Thread {
+public class RoomManager extends Thread {
 
     private static final int BUF_LEN = 128; // 예제코드에서 가져온거라 없어질 수도 있습니다.
     public static Map<String, ArrayList<Person>> rooms; // 방 이름과 해당 방에 접속한 클라이언트를 기록합니다.
     public static ServerSocket serverSocket; // port number로 만든 서버 소켓 객체입니다.
     private final ArrayList<Person> clientList = new ArrayList(); // 현재 접속한 모든 클라이언트를 기록합니다.
 
-    RoomManager(int port) {
+    public RoomManager(int port) {
         try {
             RoomManager.serverSocket = new ServerSocket(port);
         } catch (IOException e) {
