@@ -94,9 +94,9 @@ public class RoomManager extends Thread {
     /*
      * player이건 observer이건 모두에게 메세지를 보냅니다.
      */
-    public void broadcast(int code, Optional<String> message) {
+    public void broadcast(Object obj) {
         for (Person person : clientList) {
-            person.say(new GeneralResponse(code, person, message));
+            person.say(obj);
         }
     }
 
@@ -119,14 +119,14 @@ public class RoomManager extends Thread {
 
     // 예제코드 레거시. 언제 수정되거나 없어질지 모릅니다.
     public void login(Person person) {
-        OthelloServer.getInstance().printTextToServer(
-                "새로운 참가자 " + person.getUserName() + " 입장.\n"
-        );
+        OthelloServer.getInstance().printTextToServer("새로운 참가자 " + person.getUserName() + " 입장.\n");
         String message = "[" + person.getUserName() + "]님이 입장 하였습니다.\n";
         broadcast(
-                PC.getInstance().convert(ProtocolNumber.RESPONSE_101),
-                Optional.of(message)
-        );
+                new GeneralResponse(
+                        PC.getInstance().convert(ProtocolNumber.RESPONSE_101),
+                        person,
+                        Optional.of(message)
+                ));
     }
 
     // 예제코드 레거시. 언제 수정되거나 없어질지 모릅니다.
@@ -134,9 +134,10 @@ public class RoomManager extends Thread {
         clientList.remove(person);
         String message = "[" + person.getUserName() + "]님이\n ";
         broadcast(
-                PC.getInstance().convert(ProtocolNumber.QUIT_CONNECT_203),
-                Optional.of(message)
-        );
+                new GeneralResponse(
+                        PC.getInstance().convert(ProtocolNumber.QUIT_CONNECT_203),
+                        person,
+                        Optional.of(message)));
         OthelloServer.getInstance().printTextToServer("사용자 " + "[" + person.getUserName() + "] 퇴장.\n");
         OthelloServer.getInstance().printTextToServer("현재 참가자 수 " + clientList.size() + "\n");
     }
