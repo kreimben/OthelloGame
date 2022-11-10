@@ -148,4 +148,16 @@ public class RoomManager extends Thread {
         list.add(person);
         RoomManager.rooms.put(roomName, list);
     }
+
+    // `roomName`을 가진 방을 폭파합니다. 모든 클라이언트와의 접속을 끊습니다.
+    public void boomRoom(String roomName) {
+        var list = RoomManager.rooms.get(roomName);
+        for (Person person : list) {
+            try {
+                person.getSocket().close();
+            } catch (IOException e) {
+                OthelloServer.getInstance().printTextToServer("IOException: " + e.getMessage());
+            }
+        }
+    }
 }
