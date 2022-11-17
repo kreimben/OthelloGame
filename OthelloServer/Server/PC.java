@@ -32,6 +32,10 @@ public class PC {
                 return 203;
             case ENTERED_ROOM_204:
                 return 204;
+            case HISTORY_REQUEST_301:
+                return 301;
+            case HISTORY_RESPONSE_302:
+                return 302;
             default:
                 return 0;
         }

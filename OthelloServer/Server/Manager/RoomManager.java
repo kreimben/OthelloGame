@@ -4,6 +4,7 @@ import Server.Exceptions.AlreadyRoomExistsException;
 import Server.OthelloServer;
 import Server.PC;
 import Server.ProtocolNumber;
+import Server.Request.GameRequest;
 import Server.Request.GeneralRequest;
 import Server.Response.GeneralResponse;
 import Server.person.Observer;
@@ -24,6 +25,7 @@ public class RoomManager extends Thread {
 
     private static final int BUF_LEN = 128; // 예제코드에서 가져온거라 없어질 수도 있습니다.
     public static Map<String, ArrayList<Person>> rooms; // 방 이름과 해당 방에 접속한 클라이언트를 기록합니다.
+    public static Map<String, ArrayList<GameRequest>> history; // 방 이름과 해당 방의 대국을 기록합니다.
     public static ServerSocket serverSocket; // port number로 만든 서버 소켓 객체입니다.
     private final ArrayList<Person> clientList = new ArrayList(); // 현재 접속한 모든 클라이언트를 기록합니다.
 
@@ -80,6 +82,7 @@ public class RoomManager extends Thread {
                 person.roomName = roomName; // 모든 `person`객체에도 `roomName`을 입력해줌.
                 clientList.add(person); // 일단 모든 접속자들은 `clientList`에 집어 넣음.
                 this.getInRoom(roomName, person); // `roomName`에 따른 방에 `person`을 집어 넣음.
+                this.makeHistory(roomName); // `history`에 방이름으로 대국 정보를 만듬.
                 person.start();
 
                 OthelloServer.getInstance().printTextToServer("현재 참가자 수 " + clientList.size());
@@ -149,8 +152,15 @@ public class RoomManager extends Thread {
         RoomManager.rooms.put(roomName, list);
     }
 
+    public void makeHistory(String roomName) {
+        var list = RoomManager.history.get(roomName);
+        if (list == null) {
+            RoomManager.history.put(roomName, new ArrayList<GameRequest>());
+        }
+    }
+
     // `roomName`을 가진 방을 폭파합니다. 모든 클라이언트와의 접속을 끊습니다.
-    public void boomRoom(String roomName) {
+    public void disconnectAllClient(String roomName) {
         var list = RoomManager.rooms.get(roomName);
         for (Person person : list) {
             try {

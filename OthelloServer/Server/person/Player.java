@@ -7,6 +7,7 @@ import Server.ProtocolNumber;
 import Server.Request.GameRequest;
 import Server.Response.GameResponse;
 import Server.Response.GeneralResponse;
+import Server.Response.HistoryResponse;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -29,10 +30,16 @@ public class Player extends Person {
             switch (req.code) {
                 case 100:
                     // 100 좌표를 이용해 플레이 함 request. c -> s
+                    // 대국 기록을 저장함.
+                    super.writeHistory(super.roomName, (GameRequest) req);
+
+                    // 서버 화면에 적음.
                     OthelloServer.getInstance().printTextToServer(
                             req.person.getUserName() + " played to x: " + ((GameRequest) req).getX()
                                     + " / y: " + ((GameRequest) req).getY()
                     );
+
+                    // 접속한 모든 client들에게 모두 전파함.
                     rm.broadcast(
                             new GameResponse( // 102 좌표를 이용해 플레이함 response. s -> c
                                     this,
@@ -53,9 +60,21 @@ public class Player extends Person {
                     );
                     break;
                 case 203:
-                    rm.boomRoom(super.roomName);
+                    // 접속 종료
+                    rm.disconnectAllClient(super.roomName);
+                    break;
+                case 301:
+                    // 방 이름의 대국 기록. history.
+                    var history = super.getHistory(super.roomName);
+                    rm.broadcast(
+                            new HistoryResponse(
+                                    this,
+                                    history
+                            )
+                    );
                     break;
                 default:
+                    OthelloServer.getInstance().printTextToServer("Client's Unhandled Request Code: " + req.code);
                     break;
             }
         } catch (ClassNotFoundException | IOException e) {

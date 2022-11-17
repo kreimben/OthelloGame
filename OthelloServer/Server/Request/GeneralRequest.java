@@ -14,6 +14,8 @@ public class GeneralRequest implements Serializable {
      * 202 방에 입장 request. c -> s
      * 203 접속 종료 request. c -> s
      * 204 방에 입장 response. s -> c
+     * 301 히스토리 요청 request. c -> s
+     * 302 히스토리 응답 response. s -> c
      */
     public int code; // 위에 있는 프로토콜 코드입니다.
     public Person person; // 대상 클라이언트 입니다.

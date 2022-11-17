@@ -6,6 +6,7 @@ import Server.PC;
 import Server.ProtocolNumber;
 import Server.Request.GameRequest;
 import Server.Response.GeneralResponse;
+import Server.Response.HistoryResponse;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -34,10 +35,18 @@ public class Observer extends Person {
                     // 202 방에 입장 request. c -> s -> c
                     rm.broadcast(new GeneralResponse(PC.getInstance().convert(ProtocolNumber.ENTER_ROOM_202), this, Optional.empty()));
                     break;
-                case 203:
-                    // 203 접속 종료 request. c -> s -> c
+                case 301:
+                    // 방 이름의 대국 기록. history.
+                    var history = super.getHistory(super.roomName);
+                    rm.broadcast(
+                            new HistoryResponse(
+                                    this,
+                                    history
+                            )
+                    );
                     break;
                 default:
+                    OthelloServer.getInstance().printTextToServer("Client's Unhandled Request Code: " + req.code);
                     break;
             }
         } catch (ClassNotFoundException | IOException e) {
