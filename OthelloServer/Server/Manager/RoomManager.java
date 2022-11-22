@@ -152,6 +152,16 @@ public class RoomManager extends Thread {
         var list = RoomManager.rooms.get(roomName);
         list.add(person);
         RoomManager.rooms.put(roomName, list);
+
+        if (list.size() == 2) {
+            this.broadcast(
+                    new GeneralResponse(
+                            PC.getInstance().convert(ProtocolNumber.RESPONSE_101),
+                            null,
+                            Optional.of("gamestart")
+                    )
+            );
+        }
     }
 
     public void makeHistory(String roomName) {
