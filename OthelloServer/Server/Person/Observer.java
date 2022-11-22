@@ -1,16 +1,14 @@
-package Server.person;
+package Server.Person;
 
 import Server.Manager.RoomManager;
 import Server.OthelloServer;
-import Server.PC;
-import Server.ProtocolNumber;
+import Server.Request.EnterRequest;
 import Server.Request.GameRequest;
-import Server.Response.GeneralResponse;
+import Server.Response.EnterResponse;
 import Server.Response.HistoryResponse;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Optional;
 
 // 2명 이상이 같은 방을 들어갔을 때 발생되는 클래스입니다. (관전자)
 public class Observer extends Person {
@@ -27,7 +25,7 @@ public class Observer extends Person {
             OthelloServer.getInstance().printTextToServer("New message from client" + req.person + "\n" + "message: " + req.message);
 
             switch (req.code) {
-                case 100:
+                case 100 ->
                     // 100 좌표를 이용해 플레이 함 request. c -> s
                     OthelloServer.getInstance().printTextToServer(req.person.getUserName() + " played to x: " + ((GameRequest) req).getX() + "y: " + ((GameRequest) req).getY());
                     break;
@@ -44,10 +42,9 @@ public class Observer extends Person {
                                     history
                             )
                     );
-                    break;
-                default:
-                    OthelloServer.getInstance().printTextToServer("Client's Unhandled Request Code: " + req.code);
-                    break;
+                }
+                default ->
+                        OthelloServer.getInstance().printTextToServer("Client's Unhandled Request Code: " + req.code);
             }
         } catch (ClassNotFoundException | IOException e) {
             OthelloServer.getInstance().printTextToServer(e.getMessage());

@@ -1,6 +1,6 @@
 package Server.Request;
 
-import Server.person.Person;
+import Server.Person.Person;
 
 import java.util.Optional;
 
