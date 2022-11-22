@@ -1,17 +1,19 @@
-package Server.person;
+package Server.Person;
 
+import Server.Exceptions.GameOverException;
 import Server.InternetStream;
 import Server.Manager.RoomManager;
 import Server.OthelloServer;
 import Server.Request.GameRequest;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 
 // 네트워크 통신 중 서버에 접속한 모든 클라이언트를 뜻합니다.
 // 네트워크 대상자가 모두 사람일 수 밖에 없어서 이렇게 작명 했습니다.
-public abstract class Person extends Thread {
+public abstract class Person extends Thread implements Serializable {
     public String roomName;
     protected InternetStream internetStream = null; // 스트림 객체를 이용해 편리하게 소통하기 위함입니다.
     protected Socket socket; // 클라이언트 소켓이 저장됩니다.
@@ -54,7 +56,7 @@ public abstract class Person extends Thread {
     }
 
     // 플레이어로부터 듣습니다. http서버에서 사용되는 response와 같습니다.
-    public abstract void listen();
+    public abstract void listen() throws GameOverException;
 
     // 방 이름으로 저장된 대국 정보들을 반환 합니다.
     protected ArrayList<GameRequest> getHistory(String roomName) {

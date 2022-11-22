@@ -1,12 +1,12 @@
-package Server.person;
+package Server.Person;
 
+import Server.Exceptions.GameOverException;
 import Server.Manager.RoomManager;
 import Server.OthelloServer;
-import Server.PC;
-import Server.ProtocolNumber;
+import Server.Request.EnterRequest;
 import Server.Request.GameRequest;
+import Server.Response.EnterResponse;
 import Server.Response.GameResponse;
-import Server.Response.GeneralResponse;
 import Server.Response.HistoryResponse;
 
 import java.io.IOException;
@@ -21,35 +21,28 @@ public class Player extends Person {
     }
 
     // 플레이어로부터 듣습니다. http서버에서 사용되는 response와 같습니다.
-    public void listen() {
+    public void listen() throws GameOverException {
         try {
             var req = super.internetStream.receive();
             OthelloServer.getInstance().printTextToServer(req.message.get());
             OthelloServer.getInstance().printTextToServer("New message from client" + req.person + "\n" + "message: " + req.message);
 
             switch (req.code) {
-                case 100:
+                case 100 -> {
                     // 100 좌표를 이용해 플레이 함 request. c -> s
                     // 대국 기록을 저장함.
                     super.writeHistory(super.roomName, (GameRequest) req);
 
                     // 서버 화면에 적음.
-                    OthelloServer.getInstance().printTextToServer(
-                            req.person.getUserName() + " played to x: " + ((GameRequest) req).getX()
-                                    + " / y: " + ((GameRequest) req).getY()
-                    );
+                    OthelloServer.getInstance().printTextToServer(req.person.getUserName() + " played to x: " + ((GameRequest) req).getX() + " / y: " + ((GameRequest) req).getY());
 
                     // 접속한 모든 client들에게 모두 전파함.
-                    rm.broadcast(
-                            new GameResponse( // 102 좌표를 이용해 플레이함 response. s -> c
-                                    this,
-                                    Optional.empty(),
-                                    ((GameRequest) req).getX(),
-                                    ((GameRequest) req).getY()
-                            )
-                    );
-                    break;
-                case 202:
+                    rm.broadcast(new GameResponse( // 102 좌표를 이용해 플레이함 response. s -> c
+                            this, Optional.empty(), ((GameRequest) req).getX(), ((GameRequest) req).getY()));
+                }
+                case 202 ->
+                    // 입장할 때 클라이언트가 플레이어인지, 옵저버인지 `instanceof`로 체크하세요.
+                    // 만약 `player instanceof Player`를 이용한다면 플레이어인지, 옵저버인지 체크 할 수 있습니다.
                     // 202 방에 입장 request. c -> s
                         rm.broadcast(
                                 // 204 방에 입장 response. s -> c
@@ -57,20 +50,15 @@ public class Player extends Person {
                 case 203 -> {
                     // 접속 종료
                     rm.disconnectAllClient(super.roomName);
-                    break;
-                case 301:
+                    throw new GameOverException(req.person.userName + "가 게임을 종료 하였습니다.");
+                }
+                case 301 -> {
                     // 방 이름의 대국 기록. history.
                     var history = super.getHistory(super.roomName);
-                    rm.broadcast(
-                            new HistoryResponse(
-                                    this,
-                                    history
-                            )
-                    );
-                    break;
-                default:
-                    OthelloServer.getInstance().printTextToServer("Client's Unhandled Request Code: " + req.code);
-                    break;
+                    rm.broadcast(new HistoryResponse(this, history));
+                }
+                default ->
+                        OthelloServer.getInstance().printTextToServer("Client's Unhandled Request Code: " + req.code);
             }
         } catch (ClassNotFoundException | IOException e) {
             OthelloServer.getInstance().printTextToServer(e.getMessage());
@@ -83,7 +71,12 @@ public class Player extends Person {
         super.run();
 
         while (true) {
-            this.listen();
+            try {
+                this.listen();
+            } catch (GameOverException e) {
+                OthelloServer.getInstance().printTextToServer(e.getMessage());
+                break;
+            }
         }
     }
 }
