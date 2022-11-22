@@ -51,15 +51,10 @@ public class Player extends Person {
                     break;
                 case 202:
                     // 202 방에 입장 request. c -> s
-                    rm.broadcast(
-                            new GeneralResponse(
-                                    PC.getInstance().convert(ProtocolNumber.ENTERED_ROOM_204), // 204 방에 입장 response. s -> c
-                                    this,
-                                    Optional.empty()
-                            )
-                    );
-                    break;
-                case 203:
+                        rm.broadcast(
+                                // 204 방에 입장 response. s -> c
+                                new EnterResponse(this, ((EnterRequest) req).getRoomName(), ((EnterRequest) req).getUserName()));
+                case 203 -> {
                     // 접속 종료
                     rm.disconnectAllClient(super.roomName);
                     break;
