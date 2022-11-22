@@ -3,13 +3,13 @@ package Server.Manager;
 import Server.Exceptions.AlreadyRoomExistsException;
 import Server.OthelloServer;
 import Server.PC;
+import Server.Person.Observer;
+import Server.Person.Person;
+import Server.Person.Player;
 import Server.ProtocolNumber;
+import Server.Request.EnterRequest;
 import Server.Request.GameRequest;
-import Server.Request.GeneralRequest;
 import Server.Response.GeneralResponse;
-import Server.person.Observer;
-import Server.person.Person;
-import Server.person.Player;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -166,7 +166,7 @@ public class RoomManager extends Thread {
 
     public void makeHistory(String roomName) {
         var list = RoomManager.history.get(roomName);
-        if (list == null) {
+        if (list == null || list.isEmpty()) {
             RoomManager.history.put(roomName, new ArrayList<GameRequest>());
         }
     }
