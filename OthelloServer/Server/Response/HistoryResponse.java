@@ -1,7 +1,7 @@
 package Server.Response;
 
+import Server.Person.Person;
 import Server.Request.GameRequest;
-import Server.person.Person;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -16,5 +16,9 @@ public class HistoryResponse extends GeneralResponse {
     public HistoryResponse(Person person, ArrayList<GameRequest> history) {
         super(302, person, Optional.empty());
         this.history = history;
+    }
+
+    public ArrayList<GameRequest> getHistory() {
+        return this.history;
     }
 }
