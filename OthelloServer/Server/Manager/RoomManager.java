@@ -181,5 +181,11 @@ public class RoomManager extends Thread {
                 OthelloServer.getInstance().printTextToServer("IOException: " + e.getMessage());
             }
         }
+
+        RoomManager.rooms.get(roomName).clear();
+        RoomManager.rooms.remove(roomName);
+
+        RoomManager.history.get(roomName).clear();
+        RoomManager.history.remove(roomName);
     }
 }
