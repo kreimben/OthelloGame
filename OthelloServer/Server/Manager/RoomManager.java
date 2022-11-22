@@ -58,11 +58,13 @@ public class RoomManager extends Thread {
             try {
                 OthelloServer.getInstance().printTextToServer("새로운 참가자를 기다리는 중...");
                 var socket = serverSocket.accept();
-                // client에서는 서버에 접속하자마자 어떤 방 이름에 들어갈 것인지 `message`에 넣어줘야 합니다.
+                // client에서는 서버에 접속하자마자 어떤 방 이름에 들어갈 것인지 `roomName`에 넣어줘야 합니다.
+                // user name은 `userName`에 넣어주면 됩니다.
                 var ois = new ObjectInputStream(socket.getInputStream());
-                GeneralRequest req = (GeneralRequest) ois.readObject();
-                String roomName = req.message.get();
-                OthelloServer.getInstance().printTextToServer("새로운 참가자 from " + socket);
+                EnterRequest req = (EnterRequest) ois.readObject();
+                String roomName = req.getRoomName();
+                String userName = req.getUserName();
+                OthelloServer.getInstance().printTextToServer("새로운 참가자 [" + userName + "] from " + socket);
                 OthelloServer.getInstance().printTextToServer(roomName + "방에 들어갑니다.");
 
                 Person person;
