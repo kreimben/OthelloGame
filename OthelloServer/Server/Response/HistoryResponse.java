@@ -14,7 +14,7 @@ public class HistoryResponse extends GeneralResponse {
     private final ArrayList<GameRequest> history;
 
     public HistoryResponse(Person person, ArrayList<GameRequest> history) {
-        super(302, person, Optional.empty());
+        super(302, person, "");
         this.history = history;
     }
 

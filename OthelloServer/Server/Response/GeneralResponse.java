@@ -3,7 +3,6 @@ package Server.Response;
 import Server.Person.Person;
 
 import java.io.Serializable;
-import java.util.Optional;
 
 // 일반적으로 사용되는 response입니다.
 public class GeneralResponse implements Serializable {
@@ -20,9 +19,9 @@ public class GeneralResponse implements Serializable {
      */
     public int code; // 위에 있는 프로토콜 코드입니다.
     public Person person; // 대상 클라이언트 입니다.
-    public Optional<String> message; // 추가적으로 전달해 줄 메세지 입니다.
+    public String message; // 추가적으로 전달해 줄 메세지 입니다.
 
-    public GeneralResponse(int code, Person person, Optional<String> message) {
+    public GeneralResponse(int code, Person person, String message) {
         this.code = code;
         this.person = person;
         this.message = message;

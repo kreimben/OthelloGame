@@ -2,15 +2,13 @@ package Server.Response;
 
 import Server.Person.Person;
 
-import java.util.Optional;
-
 public class EnterResponse extends GeneralResponse {
     // 204 방에 입장 response. s -> c
     private String roomName;
     private String userName;
 
-    public EnterResponse(Person person, String roomName, String userName) {
-        super(204, person, Optional.empty());
+    public EnterResponse(String userName, String roomName, String listSize) {
+        super(204, null, listSize);
         this.roomName = roomName;
         this.userName = userName;
     }

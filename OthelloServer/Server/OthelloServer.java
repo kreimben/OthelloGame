@@ -111,7 +111,7 @@ public class OthelloServer extends JFrame {
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
-                OthelloServer frame = new OthelloServer();
+                OthelloServer frame = getInstance();
                 frame.setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();

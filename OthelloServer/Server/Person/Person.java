@@ -7,6 +7,8 @@ import Server.OthelloServer;
 import Server.Request.GameRequest;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -14,8 +16,10 @@ import java.util.ArrayList;
 // 네트워크 통신 중 서버에 접속한 모든 클라이언트를 뜻합니다.
 // 네트워크 대상자가 모두 사람일 수 밖에 없어서 이렇게 작명 했습니다.
 public abstract class Person extends Thread implements Serializable {
-    public String roomName;
+    protected String roomName;
     protected InternetStream internetStream = null; // 스트림 객체를 이용해 편리하게 소통하기 위함입니다.
+    protected ObjectOutputStream oos;
+    protected ObjectInputStream ois;
     protected Socket socket; // 클라이언트 소켓이 저장됩니다.
     protected String userName = ""; // 유저 이름을 저장합니다.
     protected RoomManager rm;
@@ -23,11 +27,43 @@ public abstract class Person extends Thread implements Serializable {
     Person(Socket socket, RoomManager rm) {
         try {
             // 입력 받은 소켓을 바탕으로 통신을 더 편하게 하기 위해 별도의 스트림 객체를 초기화시켜 줍니다.
-            this.internetStream = new InternetStream(socket.getInputStream(), socket.getOutputStream());
+            //this.internetStream = new InternetStream(socket.getInputStream(), socket.getOutputStream());
         } catch (Exception e) {
             OthelloServer.getInstance().printTextToServer("InternetStream initialization error");
         }
         this.rm = rm;
+    }
+
+    public void close()
+    {
+        try{
+            oos.close();
+            ois.close();
+            socket.close();
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    //인풋 스트림 받음
+    public void setOis(ObjectInputStream ois) {
+        this.ois = ois;
+    }
+
+    //아웃풋 스트림 받음
+    public void setOos(ObjectOutputStream oos)
+    {
+        this.oos = oos;
+    }
+
+    public void setRoomName(String roomName){
+        this.roomName = roomName;
+    }
+
+    public String getRoomName()
+    {
+        return roomName;
     }
 
     // 소켓을 받습니다.
@@ -48,7 +84,8 @@ public abstract class Person extends Thread implements Serializable {
     // 플레이어에게 말합니다. http서버에서 사용되는 response와 같습니다.
     public void say(Object res) {
         try {
-            this.internetStream.send(res);
+            //this.internetStream.send(res);
+            this.oos.writeObject(res);
         } catch (IOException e) {
             OthelloServer.getInstance().printTextToServer("\n통신 에러...");
             OthelloServer.getInstance().printTextToServer(e.getMessage());
