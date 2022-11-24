@@ -34,11 +34,12 @@ public class OthelloView implements Serializable {
     private String room_name;
     private String ip_addr;
     private String port_no;
-
     private OthelloBoard board = null;
     private Socket socket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
+
+    private boolean isConnected = true;
 
     //----------------------------------------------------------------------------------------
 
@@ -127,7 +128,7 @@ public class OthelloView implements Serializable {
     {
         public void run()
         {
-            while(true)
+            while(isConnected)
             {
                 try
                 {
@@ -162,15 +163,20 @@ public class OthelloView implements Serializable {
         return username;
     }
 
+    public void sendChatMessage(String message)
+    {
+
+    }
+
     public void Discconect() {
         try{
+            isConnected = false;
             int code = PC.getInstance().convert(ProtocolNumber.QUIT_CONNECT_203);
             GeneralRequest quitRequest = new GeneralRequest(code, null, username);
             oos.writeObject(quitRequest);
-
-            ois.close();
-            oos.close();
-            socket.close();
+            //oos.close();
+            //ois.close();
+            //socket.close();
             System.exit(0);
         }catch (Exception e)
         {

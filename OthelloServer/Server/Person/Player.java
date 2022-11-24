@@ -22,11 +22,13 @@ public class Player extends Person implements Serializable {
 
     public Player(Socket clientSocket, RoomManager rm) {
         super(clientSocket, rm);
+        System.out.println(this);
     }
 
     // 플레이어로부터 듣습니다. http서버에서 사용되는 response와 같습니다.
     public void listen() throws GameOverException {
         try {
+            if(socket == null) return;
             //var req = super.internetStream.receive();
             var req = (GeneralRequest) super.ois.readObject();
             OthelloServer.getInstance().printTextToServer(req.message);
@@ -58,11 +60,19 @@ public class Player extends Person implements Serializable {
                     list.remove(this);
                     RoomManager.rooms.put(roomName, list);
                     OthelloServer.getInstance().printTextToServer(req.message + "님이 접속 종료 하셨습니다.");
+                    var clist = rm.getClientList();
+                    clist.remove(this);
 
                     var list2 = RoomManager.rooms.get(roomName);
                     for(int i=0; i<list2.size(); i++)
                     {
-                        System.out.println(list2.get(i));
+                        System.out.println("User : " + list2.get(i));
+                    }
+                    System.out.println("----------");
+                    var clist2 = rm.getClientList();
+                    for(int i=0; i<clist2.size(); i++)
+                    {
+                        System.out.println("clist User : " + clist2.get(i));
                     }
 
                     int code = PC.getInstance().convert(ProtocolNumber.RESPONSE_101);
@@ -91,7 +101,7 @@ public class Player extends Person implements Serializable {
     public void run() {
         //super.run();
 
-        while (true) {
+        while (isConnected) {
             try {
                 this.listen();
             } catch (GameOverException e) {

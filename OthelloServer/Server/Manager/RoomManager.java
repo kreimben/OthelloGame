@@ -25,7 +25,7 @@ public class RoomManager extends Thread implements Serializable {
     public static Map<String, ArrayList<Person>> rooms; // 방 이름과 해당 방에 접속한 클라이언트를 기록합니다.
     public static Map<String, ArrayList<GameRequest>> history; // 방 이름과 해당 방의 대국을 기록합니다.
     public static ServerSocket serverSocket; // port number로 만든 서버 소켓 객체입니다.
-    private final ArrayList<Person> clientList = new ArrayList(); // 현재 접속한 모든 클라이언트를 기록합니다.
+    private ArrayList<Person> clientList = new ArrayList(); // 현재 접속한 모든 클라이언트를 기록합니다.
 
     public RoomManager(int port) {
         try {
@@ -112,6 +112,11 @@ public class RoomManager extends Thread implements Serializable {
         for (Person person : clientList) {
             person.say(obj);
         }
+    }
+
+    public ArrayList<Person> getClientList()
+    {
+        return clientList;
     }
 
 

@@ -24,8 +24,11 @@ public abstract class Person extends Thread implements Serializable {
     protected String userName = ""; // 유저 이름을 저장합니다.
     protected RoomManager rm;
 
+    protected boolean isConnected = true;
+
     Person(Socket socket, RoomManager rm) {
         try {
+            this.socket = socket;
             // 입력 받은 소켓을 바탕으로 통신을 더 편하게 하기 위해 별도의 스트림 객체를 초기화시켜 줍니다.
             //this.internetStream = new InternetStream(socket.getInputStream(), socket.getOutputStream());
         } catch (Exception e) {
@@ -37,6 +40,7 @@ public abstract class Person extends Thread implements Serializable {
     public void close()
     {
         try{
+            isConnected = false;
             oos.close();
             ois.close();
             socket.close();
