@@ -46,13 +46,23 @@ public class Player extends Person implements Serializable {
                     rm.broadcast(new GameResponse( // 102 좌표를 이용해 플레이함 response. s -> c
                             this, "", ((GameRequest) req).getX(), ((GameRequest) req).getY()));
                 }
+                case 104 -> {
+                    // 104 채팅 request. c -> s
+                    rm.broadcast(
+                            new GeneralResponse(
+                                    PC.getInstance().convert(ProtocolNumber.RESPONSE_101), // 101 General Response
+                                    this,
+                                    ""
+                            )
+                    );
+                }
                 case 202 ->
                     // 입장할 때 클라이언트가 플레이어인지, 옵저버인지 `instanceof`로 체크하세요.
                     // 만약 `player instanceof Player`를 이용한다면 플레이어인지, 옵저버인지 체크 할 수 있습니다.
                     // 202 방에 입장 request. c -> s
                         rm.broadcast(
                                 // 204 방에 입장 response. s -> c
-                                new EnterResponse(userName, roomName, Integer.toString(RoomManager.rooms.get(roomName).size())));
+                                new EnterResponse(userName, roomName, Integer.toString(RoomManager.getRooms().get(roomName).size())));
                 case 203 -> {
                     // 접속 종료
                     var list = RoomManager.rooms.get(roomName);
