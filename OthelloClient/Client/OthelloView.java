@@ -160,10 +160,6 @@ public class OthelloView implements Serializable {
             int code = PC.getInstance().convert(ProtocolNumber.QUIT_CONNECT_203);
             GeneralRequest quitRequest = new GeneralRequest(code, null, username);
             oos.writeObject(quitRequest);
-
-            ois.close();
-            oos.close();
-            socket.close();
             System.exit(0);
         } catch (Exception e) {
             board.AppendText("접속 종료 요청 에러..강제 종료 하세요");

@@ -1,6 +1,7 @@
 package Server.Person;
 
 import Server.Exceptions.GameOverException;
+import Server.Exceptions.PlayerOutException;
 import Server.Manager.RoomManager;
 import Server.OthelloServer;
 import Server.PC;
@@ -15,6 +16,7 @@ import Server.Response.HistoryResponse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.Socket;
+import java.net.SocketException;
 
 // 2명 이하일때 생성되는 객체로써 직접적으로 클라이언트로부터 request를 받을 수 있습니다.
 public class Player extends Person implements Serializable {
@@ -24,7 +26,7 @@ public class Player extends Person implements Serializable {
     }
 
     // 플레이어로부터 듣습니다. http서버에서 사용되는 response와 같습니다.
-    public void listen() throws GameOverException {
+    public void listen() throws GameOverException, PlayerOutException {
         try {
             //var req = super.internetStream.receive();
             var req = (GeneralRequest) super.ois.readObject();
@@ -79,6 +81,9 @@ public class Player extends Person implements Serializable {
                 default ->
                         OthelloServer.getInstance().printTextToServer("Client's Unhandled Request Code: " + req.code);
             }
+        } catch (SocketException e) {
+            OthelloServer.getInstance().printTextToServer(e.getMessage());
+            throw new PlayerOutException(e.getMessage());
         } catch (ClassNotFoundException | IOException e) {
             OthelloServer.getInstance().printTextToServer(e.getMessage());
             e.printStackTrace();
@@ -94,6 +99,8 @@ public class Player extends Person implements Serializable {
                 this.listen();
             } catch (GameOverException e) {
                 OthelloServer.getInstance().printTextToServer(e.getMessage());
+                break;
+            } catch (PlayerOutException e) {
                 break;
             }
         }
