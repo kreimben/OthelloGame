@@ -22,7 +22,12 @@ import java.util.Map;
 public class RoomManager extends Thread implements Serializable {
 
     private static final int BUF_LEN = 128; // 예제코드에서 가져온거라 없어질 수도 있습니다.
-    public static Map<String, ArrayList<Person>> rooms; // 방 이름과 해당 방에 접속한 클라이언트를 기록합니다.
+    private static Map<String, ArrayList<Person>> rooms; // 방 이름과 해당 방에 접속한 클라이언트를 기록합니다.
+
+    public static Map<String, ArrayList<Person>> getRooms() {
+        return RoomManager.rooms;
+    }
+
     public static Map<String, ArrayList<GameRequest>> history; // 방 이름과 해당 방의 대국을 기록합니다.
     public static ServerSocket serverSocket; // port number로 만든 서버 소켓 객체입니다.
     private final ArrayList<Person> clientList = new ArrayList(); // 현재 접속한 모든 클라이언트를 기록합니다.
@@ -95,7 +100,7 @@ public class RoomManager extends Thread implements Serializable {
                 this.getInRoom(roomName, person); // `roomName`에 따른 방에 `person`을 집어 넣음.
                 this.makeHistory(roomName); // `history`에 방이름으로 대국 정보를 만듬.
                 person.start();
-                
+
                 OthelloServer.getInstance().printTextToServer("현재 참가자 수 " + clientList.size());
 
             } catch (Exception e) {

@@ -65,23 +65,15 @@ public class Player extends Person implements Serializable {
                                 new EnterResponse(userName, roomName, Integer.toString(RoomManager.getRooms().get(roomName).size())));
                 case 203 -> {
                     // 접속 종료
-                    var list = RoomManager.rooms.get(roomName);
+                    var list = RoomManager.getRooms().get(roomName);
                     list.remove(this);
-                    RoomManager.rooms.put(roomName, list);
+                    RoomManager.getRooms().put(roomName, list);
                     OthelloServer.getInstance().printTextToServer(req.message + "님이 접속 종료 하셨습니다.");
-
-                    var list2 = RoomManager.rooms.get(roomName);
-                    for (int i = 0; i < list2.size(); i++) {
-                        System.out.println(list2.get(i));
-                    }
 
                     int code = PC.getInstance().convert(ProtocolNumber.RESPONSE_101);
                     GeneralResponse someoneQuitResponse = new GeneralResponse(code, null, req.message + "님이 접속 종료 하셨습니다.");
                     rm.broadcast(someoneQuitResponse);
                     super.close();
-
-                    //rm.disconnectAllClient(super.roomName);
-                    //throw new GameOverException(req.person.userName + "가 게임을 종료 하였습니다.");
                 }
                 case 301 -> {
                     // 방 이름의 대국 기록. history.

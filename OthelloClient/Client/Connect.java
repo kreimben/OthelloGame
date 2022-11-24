@@ -12,7 +12,7 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
-public class Connect extends JFrame{
+public class Connect extends JFrame {
     private JFrame frame; //프레임
     private JPanel contentPane; //텍스트 필드들이 붙을 패널
     private JTextField txtUserName; //유저 이름
@@ -33,8 +33,7 @@ public class Connect extends JFrame{
         });
     }
 
-    public Connect()
-    {
+    public Connect() {
         //프레임
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 254, 400);
