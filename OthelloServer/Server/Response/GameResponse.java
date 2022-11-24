@@ -2,8 +2,6 @@ package Server.Response;
 
 import Server.Person.Person;
 
-import java.util.Optional;
-
 public class GameResponse extends GeneralResponse {
     /**
      * 102 좌표를 이용해 플레이함 response. s -> c
@@ -11,7 +9,7 @@ public class GameResponse extends GeneralResponse {
     private final int x;
     private final int y;
 
-    public GameResponse(Person person, Optional<String> message, int x, int y) {
+    public GameResponse(Person person, String message, int x, int y) {
         super(102, person, message);
         this.x = x;
         this.y = y;

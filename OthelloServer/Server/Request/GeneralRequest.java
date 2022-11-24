@@ -3,7 +3,6 @@ package Server.Request;
 import Server.Person.Person;
 
 import java.io.Serializable;
-import java.util.Optional;
 
 // 일반적으로 사용되는 Request객체 입니다.
 public class GeneralRequest implements Serializable {
@@ -20,9 +19,9 @@ public class GeneralRequest implements Serializable {
      */
     public final int code; // 위에 있는 프로토콜 코드입니다.
     public final Person person; // 대상 클라이언트 입니다.
-    public final Optional<String> message; // 추가적으로 받은 메세지입니다.
+    public final String message; // 추가적으로 받은 메세지입니다.
 
-    public GeneralRequest(int code, Person person, Optional<String> message) {
+    public GeneralRequest(int code, Person person, String message) {
         this.code = code;
         this.person = person;
         this.message = message;

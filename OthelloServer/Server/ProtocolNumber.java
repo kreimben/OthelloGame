@@ -10,6 +10,7 @@ public enum ProtocolNumber {
      * 202 방에 입장 request. c -> s
      * 203 접속 종료 request. c -> s
      * 204 방에 입장 response. s -> c
+     * 205 접속 종료 response. s -> c
      * 301 히스토리 요청 request. c -> s
      * 302 히스토리 응답 response. s -> c
      */
@@ -21,6 +22,7 @@ public enum ProtocolNumber {
     ENTER_ROOM_202,
     QUIT_CONNECT_203,
     ENTERED_ROOM_204,
+    QUIT_CONNECT_205,
     HISTORY_REQUEST_301,
     HISTORY_RESPONSE_302
 }

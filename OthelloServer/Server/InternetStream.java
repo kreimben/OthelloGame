@@ -5,7 +5,7 @@ import Server.Request.GeneralRequest;
 import java.io.*;
 
 // 서버와 클라이언트 통신을 통일 시키기 위해 이 객체를 이용해 Response와 Request를 실행합니다.
-public class InternetStream {
+public class InternetStream implements Serializable{
 
     private ObjectInputStream is = null;
     private ObjectOutputStream os = null;

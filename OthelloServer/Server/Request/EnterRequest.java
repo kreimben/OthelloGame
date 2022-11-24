@@ -2,15 +2,13 @@ package Server.Request;
 
 import Server.Person.Person;
 
-import java.util.Optional;
-
 public class EnterRequest extends GeneralRequest {
     // 202 방에 입장 request. c -> s
     private String userName;
     private String roomName;
 
     public EnterRequest(Person person, String roomName, String userName) {
-        super(202, person, Optional.empty());
+        super(202, person, "");
         this.userName = userName;
         this.roomName = roomName;
     }
