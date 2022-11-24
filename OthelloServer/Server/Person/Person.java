@@ -39,7 +39,6 @@ public abstract class Person extends Thread implements Serializable {
         try {
             oos.close();
             ois.close();
-            socket.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
