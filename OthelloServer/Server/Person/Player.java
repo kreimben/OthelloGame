@@ -5,7 +5,6 @@ import Server.Manager.RoomManager;
 import Server.OthelloServer;
 import Server.PC;
 import Server.ProtocolNumber;
-import Server.Request.EnterRequest;
 import Server.Request.GameRequest;
 import Server.Request.GeneralRequest;
 import Server.Response.EnterResponse;
@@ -60,8 +59,7 @@ public class Player extends Person implements Serializable {
                     OthelloServer.getInstance().printTextToServer(req.message + "님이 접속 종료 하셨습니다.");
 
                     var list2 = RoomManager.rooms.get(roomName);
-                    for(int i=0; i<list2.size(); i++)
-                    {
+                    for (int i = 0; i < list2.size(); i++) {
                         System.out.println(list2.get(i));
                     }
 
