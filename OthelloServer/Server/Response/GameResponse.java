@@ -10,7 +10,7 @@ public class GameResponse extends GeneralResponse {
     private final int y;
 
     public GameResponse(Person person, String message, int x, int y) {
-        super(102, person, message);
+        super(102, null, message);
         this.x = x;
         this.y = y;
     }

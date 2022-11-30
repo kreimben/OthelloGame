@@ -17,9 +17,11 @@ public class OthelloBoard extends JFrame {
     private JTextField txtInput;
     private JButton btnSend;
     private OthelloView view;
+    private String username;
 
     public OthelloBoard(OthelloView view, int posX, int posY) {
         this.view = view;
+        username = view.getUserName();
 
         //Frame
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -41,7 +43,7 @@ public class OthelloBoard extends JFrame {
         scrollPane.setViewportView(textArea);
 
         //유저 이름
-        lblUserName = new JLabel(view.getUserName());
+        lblUserName = new JLabel(username);
         lblUserName.setBorder(new LineBorder(new Color(0, 0, 0)));
         lblUserName.setBackground(Color.WHITE);
         lblUserName.setFont(new Font("굴림", Font.BOLD, 14));
@@ -64,13 +66,14 @@ public class OthelloBoard extends JFrame {
 
         //접속 종료 버튼
         JButton btnDisConnect = new JButton("Disconnect");
-        btnDisConnect.setBounds(84, 540, 100, 40);
+        btnDisConnect.setBounds(12, 540, 100, 40);
         contentPane.add(btnDisConnect);
 
 
         //버튼 이벤트 등록
         SendChatMessageAction sendChatMessage = new SendChatMessageAction();
         btnSend.addActionListener(sendChatMessage);
+        txtInput.addActionListener(sendChatMessage);
 
         DisconnectAction disconnectAction = new DisconnectAction();
         btnDisConnect.addActionListener(disconnectAction);
@@ -81,7 +84,8 @@ public class OthelloBoard extends JFrame {
         public void actionPerformed(ActionEvent e) {
             if(e.getSource() == btnSend || e.getSource() == txtInput)
             {
-                String message = txtInput.getText();
+                String input = txtInput.getText();
+                String message = String.format("[%s] : %s", username, input);
                 txtInput.setText("");
                 txtInput.requestFocus();
                 view.sendChatMessage(message);

@@ -43,7 +43,6 @@ public abstract class Person extends Thread implements Serializable {
             isConnected = false;
             oos.close();
             ois.close();
-            socket.close();
         }catch (Exception e)
         {
             e.printStackTrace();
@@ -100,12 +99,14 @@ public abstract class Person extends Thread implements Serializable {
     public abstract void listen() throws GameOverException;
 
     // 방 이름으로 저장된 대국 정보들을 반환 합니다.
-    protected ArrayList<GameRequest> getHistory(String roomName) {
+    protected String getHistory(String roomName) {
         return RoomManager.history.get(roomName);
     }
 
     // 방 이름으로 대국 정보를 기록합니다.
-    protected void writeHistory(String roomName, GameRequest req) {
-        RoomManager.history.get(roomName).add(req);
+    protected void writeHistory(String roomName, String coordinate) {
+        String history = RoomManager.history.get(roomName);
+        history += coordinate;
+        RoomManager.history.put(roomName, history);
     }
 }

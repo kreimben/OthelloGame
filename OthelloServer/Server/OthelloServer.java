@@ -95,7 +95,7 @@ public class OthelloServer extends JFrame {
                 ex.printStackTrace();
                 printTextToServer("같은 방의 이름이 이미 존재합니다.");
             }
-            printTextToServer("방 정보: " + Arrays.toString(RoomManager.rooms.entrySet().toArray()));
+            printTextToServer("방 정보: " + Arrays.toString(RoomManager.getRooms().entrySet().toArray()));
         });
         contentPane.add(createRoomButton);
     }
