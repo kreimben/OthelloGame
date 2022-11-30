@@ -28,6 +28,7 @@ public class Player extends Person implements Serializable {
     // 플레이어로부터 듣습니다. http서버에서 사용되는 response와 같습니다.
     public void listen() throws GameOverException, PlayerOutException {
         try {
+            if(socket == null) return;
             //var req = super.internetStream.receive();
             var req = (GeneralRequest) super.ois.readObject();
             OthelloServer.getInstance().printTextToServer(req.message);
@@ -37,22 +38,25 @@ public class Player extends Person implements Serializable {
                 case 100 -> {
                     // 100 좌표를 이용해 플레이 함 request. c -> s
                     // 대국 기록을 저장함.
-                    super.writeHistory(super.roomName, (GameRequest) req);
+                    String coordinate = ((GameRequest) req).getX() + "," + ((GameRequest) req).getY() + "," + ":";
+                    super.writeHistory(super.roomName, coordinate);
 
                     // 서버 화면에 적음.
-                    OthelloServer.getInstance().printTextToServer(req.person.getUserName() + " played to x: " + ((GameRequest) req).getX() + " / y: " + ((GameRequest) req).getY());
+                    OthelloServer.getInstance().printTextToServer(req.message + " played to x: " + ((GameRequest) req).getX() + " / y: " + ((GameRequest) req).getY());
 
                     // 접속한 모든 client들에게 모두 전파함.
-                    rm.broadcast(new GameResponse( // 102 좌표를 이용해 플레이함 response. s -> c
-                            this, "", ((GameRequest) req).getX(), ((GameRequest) req).getY()));
+                    int x = ((GameRequest) req).getX();
+                    int y = ((GameRequest) req).getY();
+                    rm.broadcastOthers(new GameResponse( // 102 좌표를 이용해 플레이함 response. s -> c
+                            null, super.userName, x, y), super.userName);
                 }
                 case 104 -> {
                     // 104 채팅 request. c -> s
                     rm.broadcast(
                             new GeneralResponse(
                                     PC.getInstance().convert(ProtocolNumber.RESPONSE_101), // 101 General Response
-                                    this,
-                                    ""
+                                    null,
+                                    req.message
                             )
                     );
                 }
@@ -68,17 +72,27 @@ public class Player extends Person implements Serializable {
                     var list = RoomManager.getRooms().get(roomName);
                     list.remove(this);
                     RoomManager.getRooms().put(roomName, list);
+
                     OthelloServer.getInstance().printTextToServer(req.message + "님이 접속 종료 하셨습니다.");
+                    var clist = rm.getClientList();
+                    clist.remove(this);
 
                     int code = PC.getInstance().convert(ProtocolNumber.RESPONSE_101);
                     GeneralResponse someoneQuitResponse = new GeneralResponse(code, null, req.message + "님이 접속 종료 하셨습니다.");
                     rm.broadcast(someoneQuitResponse);
                     super.close();
                 }
-                case 301 -> {
-                    // 방 이름의 대국 기록. history.
-                    var history = super.getHistory(super.roomName);
-                    rm.broadcast(new HistoryResponse(this, history));
+                case 400 -> {
+                    OthelloServer.getInstance().printTextToServer("Game Start");
+                    int code = PC.getInstance().convert(ProtocolNumber.GameStart_401);
+                    GeneralResponse gameStartResponse = new GeneralResponse(code, null, "Game Start");
+                    rm.broadcast(gameStartResponse);
+                }
+                case 402 -> {
+                    OthelloServer.getInstance().printTextToServer(req.message);
+                    int code = PC.getInstance().convert(ProtocolNumber.GameEnd_403);
+                    GeneralResponse gameEndResponse = new GeneralResponse(code, null, req.message);
+                    rm.broadcast(gameEndResponse);
                 }
                 default ->
                         OthelloServer.getInstance().printTextToServer("Client's Unhandled Request Code: " + req.code);
@@ -96,7 +110,7 @@ public class Player extends Person implements Serializable {
     public void run() {
         //super.run();
 
-        while (true) {
+        while (isConnected) {
             try {
                 this.listen();
             } catch (GameOverException e) {

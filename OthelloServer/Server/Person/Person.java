@@ -25,8 +25,11 @@ public abstract class Person extends Thread implements Serializable {
     protected String userName = ""; // 유저 이름을 저장합니다.
     protected RoomManager rm;
 
+    protected boolean isConnected = true;
+
     Person(Socket socket, RoomManager rm) {
         try {
+            this.socket = socket;
             // 입력 받은 소켓을 바탕으로 통신을 더 편하게 하기 위해 별도의 스트림 객체를 초기화시켜 줍니다.
             //this.internetStream = new InternetStream(socket.getInputStream(), socket.getOutputStream());
         } catch (Exception e) {
@@ -35,11 +38,14 @@ public abstract class Person extends Thread implements Serializable {
         this.rm = rm;
     }
 
-    public void close() {
-        try {
+    public void close()
+    {
+        try{
+            isConnected = false;
             oos.close();
             ois.close();
-        } catch (Exception e) {
+        }catch (Exception e)
+        {
             e.printStackTrace();
         }
     }
@@ -92,12 +98,14 @@ public abstract class Person extends Thread implements Serializable {
     public abstract void listen() throws GameOverException, PlayerOutException;
 
     // 방 이름으로 저장된 대국 정보들을 반환 합니다.
-    protected ArrayList<GameRequest> getHistory(String roomName) {
+    protected String getHistory(String roomName) {
         return RoomManager.history.get(roomName);
     }
 
     // 방 이름으로 대국 정보를 기록합니다.
-    protected void writeHistory(String roomName, GameRequest req) {
-        RoomManager.history.get(roomName).add(req);
+    protected void writeHistory(String roomName, String coordinate) {
+        String history = RoomManager.history.get(roomName);
+        history += coordinate;
+        RoomManager.history.put(roomName, history);
     }
 }

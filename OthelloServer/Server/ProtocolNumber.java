@@ -5,6 +5,7 @@ public enum ProtocolNumber {
     /**
      * 100 좌표를 이용해 플레이 함 request. c -> s
      * 101 서버로부터 메세지를 받음 response. s -> c
+     * 102 좌표를 이용해 플레이 함 response s -> c
      * 104 채팅 request. c -> s
      * 200 방을 만듬 request. c -> s
      * 201 방이 만들어짐 response. s -> c
@@ -14,6 +15,10 @@ public enum ProtocolNumber {
      * 205 접속 종료 response. s -> c
      * 301 히스토리 요청 request. c -> s
      * 302 히스토리 응답 response. s -> c
+     * 400 게임 시작 요청 request. c->s
+     * 401 게임 시작 응답 response. s->c
+     * 402 게임 끝 요청 request. c->s
+     * 403 게임 끝 응답 response. s->c
      */
     PLAY_WITH_COORDINATE_100,
     RESPONSE_101,
@@ -26,5 +31,9 @@ public enum ProtocolNumber {
     ENTERED_ROOM_204,
     QUIT_CONNECT_205,
     HISTORY_REQUEST_301,
-    HISTORY_RESPONSE_302
+    HISTORY_RESPONSE_302,
+    GameStart_400,
+    GameStart_401,
+    GameEnd_402,
+    GameEnd_403,
 }

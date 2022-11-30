@@ -22,6 +22,10 @@ public class PC {
                 return 100;
             case RESPONSE_101:
                 return 101;
+            case PLAYED_WITH_COORDINATE_102:
+                return 102;
+            case CHAT_104:
+                return 104;
             case CREATE_ROOM_200:
                 return 200;
             case ROOM_CREATED_201:
@@ -38,6 +42,14 @@ public class PC {
                 return 301;
             case HISTORY_RESPONSE_302:
                 return 302;
+            case GameStart_400:
+                return 400;
+            case GameStart_401:
+                return 401;
+            case GameEnd_402:
+                return 402;
+            case GameEnd_403:
+                return 403;
             default:
                 return 0;
         }

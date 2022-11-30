@@ -14,10 +14,14 @@ public class OthelloBoard extends JFrame {
     private JPanel contentPane;
     private JLabel lblUserName;
     private JTextPane textArea;
+    private JTextField txtInput;
+    private JButton btnSend;
     private OthelloView view;
+    private String username;
 
     public OthelloBoard(OthelloView view, int posX, int posY) {
         this.view = view;
+        username = view.getUserName();
 
         //Frame
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -39,7 +43,7 @@ public class OthelloBoard extends JFrame {
         scrollPane.setViewportView(textArea);
 
         //유저 이름
-        lblUserName = new JLabel(view.getUserName());
+        lblUserName = new JLabel(username);
         lblUserName.setBorder(new LineBorder(new Color(0, 0, 0)));
         lblUserName.setBackground(Color.WHITE);
         lblUserName.setFont(new Font("굴림", Font.BOLD, 14));
@@ -48,13 +52,48 @@ public class OthelloBoard extends JFrame {
         contentPane.add(lblUserName);
         setVisible(true);
 
+        //채팅 텍스트필드
+        txtInput = new JTextField();
+        txtInput.setBounds(84, 490, 209, 40);
+        contentPane.add(txtInput);
+        txtInput.setColumns(10);
+
+        //전송 버튼
+        btnSend = new JButton("Send");
+        btnSend.setFont(new Font("굴림", Font.PLAIN, 14));
+        btnSend.setBounds(300, 490, 69, 40);
+        contentPane.add(btnSend);
+
         //접속 종료 버튼
         JButton btnDisConnect = new JButton("Disconnect");
-        btnDisConnect.setBounds(84, 490, 100, 40);
+        btnDisConnect.setBounds(12, 540, 100, 40);
         contentPane.add(btnDisConnect);
+
+
+        //버튼 이벤트 등록
+        SendChatMessageAction sendChatMessage = new SendChatMessageAction();
+        btnSend.addActionListener(sendChatMessage);
+        txtInput.addActionListener(sendChatMessage);
+
         DisconnectAction disconnectAction = new DisconnectAction();
         btnDisConnect.addActionListener(disconnectAction);
     }
+    class SendChatMessageAction implements ActionListener // 접속 종료 이벤트 발생
+    {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(e.getSource() == btnSend || e.getSource() == txtInput)
+            {
+                String input = txtInput.getText();
+                String message = String.format("[%s] : %s", username, input);
+                txtInput.setText("");
+                txtInput.requestFocus();
+                view.sendChatMessage(message);
+            }
+
+        }
+    }
+
 
     class DisconnectAction implements ActionListener // 접속 종료 이벤트 발생
     {

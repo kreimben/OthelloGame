@@ -10,7 +10,7 @@ public class GameRequest extends GeneralRequest {
     private final int y;
 
     public GameRequest(Person person, String message, int x, int y) {
-        super(100, person, message);
+        super(100, null, message);
         this.x = x;
         this.y = y;
     }

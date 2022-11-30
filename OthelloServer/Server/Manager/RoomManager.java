@@ -22,15 +22,13 @@ import java.util.Map;
 public class RoomManager extends Thread implements Serializable {
 
     private static final int BUF_LEN = 128; // 예제코드에서 가져온거라 없어질 수도 있습니다.
-    private static Map<String, ArrayList<Person>> rooms; // 방 이름과 해당 방에 접속한 클라이언트를 기록합니다.
-
+    public static Map<String, ArrayList<Person>> rooms; // 방 이름과 해당 방에 접속한 클라이언트를 기록합니다.
     public static Map<String, ArrayList<Person>> getRooms() {
         return RoomManager.rooms;
     }
-
-    public static Map<String, ArrayList<GameRequest>> history; // 방 이름과 해당 방의 대국을 기록합니다.
+    public static Map<String, String> history; // 방 이름과 해당 방의 대국을 기록합니다.
     public static ServerSocket serverSocket; // port number로 만든 서버 소켓 객체입니다.
-    private final ArrayList<Person> clientList = new ArrayList(); // 현재 접속한 모든 클라이언트를 기록합니다.
+    private ArrayList<Person> clientList = new ArrayList(); // 현재 접속한 모든 클라이언트를 기록합니다.
 
     public RoomManager(int port) {
         try {
@@ -119,6 +117,21 @@ public class RoomManager extends Thread implements Serializable {
         }
     }
 
+    public void broadcastOthers(Object obj, String username)
+    {
+        for(Person person : clientList)
+        {
+            if(person.getUserName().equals(username)) continue;
+            System.out.println(person.getUserName());
+            person.say(obj);
+        }
+    }
+
+    public ArrayList<Person> getClientList()
+    {
+        return clientList;
+    }
+
 
     // Windows 처럼 message 제외한 나머지 부분은 NULL 로 만들기 위한 함수
     // 예제코드 레거시라서 언제 없어질지 모릅니다.
@@ -187,7 +200,7 @@ public class RoomManager extends Thread implements Serializable {
     public void makeHistory(String roomName) {
         var list = RoomManager.history.get(roomName);
         if (list == null || list.isEmpty()) {
-            RoomManager.history.put(roomName, new ArrayList<GameRequest>());
+            RoomManager.history.put(roomName, "");
         }
     }
 
@@ -205,7 +218,7 @@ public class RoomManager extends Thread implements Serializable {
         RoomManager.rooms.get(roomName).clear();
         RoomManager.rooms.remove(roomName);
 
-        RoomManager.history.get(roomName).clear();
+        RoomManager.history.put(roomName, "");
         RoomManager.history.remove(roomName);
     }
 }

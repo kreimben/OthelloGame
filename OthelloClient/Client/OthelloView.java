@@ -3,9 +3,12 @@ package Client;
 import Server.PC;
 import Server.ProtocolNumber;
 import Server.Request.EnterRequest;
+import Server.Request.GameRequest;
 import Server.Request.GeneralRequest;
 import Server.Response.EnterResponse;
+import Server.Response.GameResponse;
 import Server.Response.GeneralResponse;
+import Server.Response.HistoryResponse;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -34,11 +37,15 @@ public class OthelloView implements Serializable {
     private String room_name;
     private String ip_addr;
     private String port_no;
-
     private OthelloBoard board = null;
     private Socket socket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
+    private boolean isConnected = true;
+    private int countPersonInRoom = 0;
+    private String type = "";
+    private int id;
+    private boolean isGameStarted = false;
 
     //----------------------------------------------------------------------------------------
 
@@ -72,9 +79,10 @@ public class OthelloView implements Serializable {
                 jb[i][j].addActionListener(event -> {
                     for (int i1 = 0; i1 < 8; i1++) {
                         for (int j1 = 0; j1 < 8; j1++) { //for문으로 오셀로 판을 한바퀴 돌면서 이벤트가 발생한 버튼을 찾는다.
-                            if (event.getSource() == jb[i1][j1] && game == 0) { //game이 0일때 즉, 게임이 진행중일때만 이벤트가 발동
+                            if (event.getSource() == jb[i1][j1] && game == 0 && isGameStarted && (Integer.parseInt(k.getText()) % 2 == id) && type != "Observer") { //game이 0일때 즉, 게임이 진행중일때만 이벤트가 발동
+                                System.out.println("버튼 눌림");
                                 if (shown) hide(); //경우의 수가 보여지고 있다면 꺼준다. 유효한 수든 아니든 버튼이 눌리면 무조건 꺼줌
-                                click(i1, j1, Integer.parseInt(k.getText())); //실직적으로 이벤트를 처리하는 함수. 인자 : x, y, z(현재 누구 차례인지)
+                                click(i1, j1, Integer.parseInt(k.getText()), true); //실직적으로 이벤트를 처리하는 함수. 인자 : x, y, z(현재 누구 차례인지)
                                 k.setText(String.valueOf(Integer.parseInt(k.getText()) + 1)); //일단 돌을 놓았으므로, +1을 해줘 차례를 넘긴다
                             }
                         }
@@ -122,10 +130,14 @@ public class OthelloView implements Serializable {
         //----------------------------------------------------------------------------------------
     }
 
-    public class Listen extends Thread {
-        public void run() {
-            while (true) {
-                try {
+    public class Listen extends Thread
+    {
+        public void run()
+        {
+            while(isConnected)
+            {
+                try
+                {
                     GeneralResponse response = (GeneralResponse) ois.readObject(); //서버로부터 응답 받음
                     int code = response.code; //응답의 코드
                     switch (code) //코드에 따라서 프로토콜 처리
@@ -134,12 +146,67 @@ public class OthelloView implements Serializable {
                             String message = response.message;
                             board.AppendText(message);
                             break;
+                        case 102:
+                            int x = ((GameResponse) response).getX();
+                            int y = ((GameResponse) response).getY();
+                            int z = Integer.parseInt(k.getText());
+                            click(x, y, z, false);
+
+                            board.AppendText("상대 수 정보 받음");
+                            board.AppendText("현재 k : " + k.getText());
+                            break;
                         case 204: //누군가 방에 접속함
-                            String username = ((EnterResponse) response).getUserName();
+                            String enteredUsername = ((EnterResponse) response).getUserName();
                             String roomName = ((EnterResponse) response).getRoomName();
-                            String count = response.message;
-                            board.AppendText(username + "님이 " + roomName + " 에 접속하셨습니다.");
-                            board.AppendText("현재 방 인원 수 : " + count);
+                            countPersonInRoom = Integer.parseInt(response.message);
+
+                            /*
+                            if(type == "")
+                            {
+                                type = countPersonInRoom <= 2 ? "Player" + countPersonInRoom : "Observer" + countPersonInRoom;
+                            }
+                             */
+
+                            board.AppendText(enteredUsername + "님이 " + roomName + " 에 접속하셨습니다.");
+                            board.AppendText("현재 방 인원 수 : " + countPersonInRoom);
+
+                            if(countPersonInRoom == 1 && type == "")
+                            {
+                                System.out.println("첫번째 플레이어는 : " + this);
+                                id = 1;
+                                type = "Player";
+                                board.AppendText("Player2를 기다리는 중...");
+                            }
+                            if(countPersonInRoom == 2 && type == "")
+                            {
+                                System.out.println("두번째 플레이어는 : " + this);
+                                id = 0;
+                                type = "Player";
+                                int startCode = PC.getInstance().convert(ProtocolNumber.GameStart_400);
+                                GeneralRequest gameStartRequest = new GeneralRequest(startCode, null, "GameStart");
+                                oos.writeObject(gameStartRequest);
+                            }
+                            if(countPersonInRoom == 3 && type == "")
+                            {
+                                System.out.println("세번째 플레이어는 : " + this);
+                                type = "Observer";
+                                int historyReqCode = PC.getInstance().convert(ProtocolNumber.HISTORY_REQUEST_301);
+                                GeneralRequest historyRequest = new GeneralRequest(historyReqCode, null, username);
+                                oos.writeObject(historyRequest);
+                            }
+                            board.AppendText("당신은 " + type + countPersonInRoom + "입니다.");
+                            break;
+                        case 302:
+                            String history = ((HistoryResponse) response).getHistory();
+                            loadHistory(history);
+                        case 401:
+                            isGameStarted = true;
+                            board.AppendText(username + "is Ready" + response.message);
+                            break;
+                        case 403:
+                            isGameStarted = false;
+                            board.AppendText(response.message);
+                            System.out.println("isGameStarted : " + isGameStarted);
                             break;
                     }
 
@@ -151,22 +218,52 @@ public class OthelloView implements Serializable {
         }
     }
 
-    public String getUserName() {
+    public void loadHistory(String history)
+    {
+        String[] list = history.split(":");
+        for(int i=0; i<list.length; i++)
+        {
+            String [] detail = list[i].split(",");
+            int x = Integer.parseInt(detail[0]);
+            int y = Integer.parseInt(detail[1]);
+            System.out.println("x : " + x + ", " + "y : " + y);
+            click(x, y, i + 1, false);
+        }
+    }
+
+    public String getUserName()
+    {
         return username;
     }
 
+    public void sendChatMessage(String message)
+    {
+        try
+        {
+            int code = PC.getInstance().convert(ProtocolNumber.CHAT_104);
+            GeneralRequest chatMessageRequest = new GeneralRequest(code, null, message);
+            oos.writeObject(chatMessageRequest);
+        }catch(Exception e)
+        {
+            board.AppendText("메세지 송신 오류");
+            e.printStackTrace();
+        }
+
+    }
+
     public void Discconect() {
-        try {
+        try{
+            isConnected = false;
             int code = PC.getInstance().convert(ProtocolNumber.QUIT_CONNECT_203);
             GeneralRequest quitRequest = new GeneralRequest(code, null, username);
             oos.writeObject(quitRequest);
+
             System.exit(0);
         } catch (Exception e) {
             board.AppendText("접속 종료 요청 에러..강제 종료 하세요");
             e.printStackTrace();
         }
     }
-
 
     /**
      * 프레임 객체를 초기화 합니다.
@@ -265,6 +362,10 @@ public class OthelloView implements Serializable {
         jPass.setFont(new Font("Arial", Font.BOLD, 24));
         jPass.setBorder(new LineBorder(new Color(240, 230, 181)));
         jPass.addActionListener(event -> {
+            if(isGameStarted == false) return;
+            if(Integer.parseInt(k.getText()) % 2 != id) return;
+            if(type == "Observer") return;
+
             if (shown) hide(); //패스 버튼을 누르면 무조건 경우의 수 꺼줌
             pass();
         });
@@ -288,6 +389,10 @@ public class OthelloView implements Serializable {
         jShow.setFont(new Font("Arial", Font.BOLD, 24));
         jShow.setBorder(new LineBorder(new Color(240, 230, 181)));
         jShow.addActionListener(event -> {
+            if(isGameStarted == false) return;
+            if(Integer.parseInt(k.getText()) % 2 != id) return;
+            if(type == "Observer") return;
+
             if (shown) hide(); //켜져있으면 꺼줌
             else show(); //꺼져있으면 켜줌
         });
@@ -433,7 +538,7 @@ public class OthelloView implements Serializable {
      * @param y 세로위치
      * @param z 해당 위치가 흑인지 백인지
      */
-    private void click(int x, int y, int z) { //선 조치 후 수정 방식
+    private void click(int x, int y, int z, boolean isMine) {
         //----- 선 조치
         int f = mat[x][y]; //마우스를 누른 그 칸에 흑돌이 있는지 백돌이 있는지 돌이 없는지를 받아옴
         if (z % 2 != 0) { //현재 흑돌 차례라면
@@ -459,6 +564,19 @@ public class OthelloView implements Serializable {
             jNote.setText((jNote.getText()).substring(0, 12) + "  [Invalid move, try again]"); //유효하지 않은 수라고 경고메세지 출력
         } else {
             //유효한 수 이므로 차례가 넘어감
+            if(isMine)
+            {
+                try{
+                    GameRequest gameRequest = new GameRequest(null, username, x, y);
+                    oos.writeObject(gameRequest);
+                }catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                }
+            }
+            else
+                k.setText(String.valueOf(Integer.parseInt(k.getText()) + 1));
+            System.out.println("내가 수 두고 난후 : " + k.getText());
             if (z % 2 != 0) jNote.setText("White's turn"); //돌을 둔 사람이 흑이면 백의 차례라고 출력
             else jNote.setText("Black's turn"); //돌을 둔 사람이 백이면 흑의 차례라고 출력
         }
@@ -717,12 +835,30 @@ public class OthelloView implements Serializable {
             else if (w > b) jNote.setText("White WINS (All squares filled)"); //백돌이 흑돌보다 많으면 백돌 승 메세지 출력
             else jNote.setText("Game TIED (All squares filled)"); //흑돌과 백돌의 수가 같으면 무승부 메세지 출력
             game = 1; //game이 1이 되어 버튼을 클릭해도 이벤트 처리가 되지 않도록 함
+
+            try{
+                int endCode = PC.getInstance().convert(ProtocolNumber.GameEnd_402);
+                GeneralResponse gameOverResponse = new GeneralResponse(endCode, null, jNote.getText());
+                oos.writeObject(gameOverResponse);
+            }catch(Exception e)
+            {
+                e.printStackTrace();
+            }
         }
         if (noValid(1, 0) && noValid(2, 0)) { //오셀로 판을 한바퀴 돌며 유효성 검사를 해서 한쪽이라도 더 이상 둘 수 없는 상태가 되면
             if (b > w) jNote.setText("Black WINS (No valid moves left)"); //흑돌이 백돌보다 많으면 흑돌 승 메세지 출력
             else if (w > b) jNote.setText("White WINS (No valid moves left)"); //백돌이 흑돌보다 많으면 백돌 승 메세지 출력
             else jNote.setText("Game TIED (No valid moves left)"); //흑돌과 백돌의 수가 같으면 무승부 메세지 출력
             game = 1; //game이 1이 되어 버튼을 클릭해도 이벤트 처리가 되지 않도록 함
+
+            try{
+                int endCode = PC.getInstance().convert(ProtocolNumber.GameEnd_402);
+                GeneralResponse gameOverResponse = new GeneralResponse(endCode, null, jNote.getText());
+                oos.writeObject(gameOverResponse);
+            }catch(Exception e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 }
