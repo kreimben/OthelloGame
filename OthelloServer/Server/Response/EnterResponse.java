@@ -7,8 +7,8 @@ public class EnterResponse extends GeneralResponse {
     private String roomName;
     private String userName;
 
-    public EnterResponse(String userName, String roomName, String listSize) {
-        super(204, null, listSize);
+    public EnterResponse(String userName, String roomName, String roomSize) {
+        super(204, null, roomSize);
         this.roomName = roomName;
         this.userName = userName;
     }

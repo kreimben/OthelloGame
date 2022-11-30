@@ -36,4 +36,8 @@ public enum ProtocolNumber {
     GameStart_401,
     GameEnd_402,
     GameEnd_403,
+    READY_REQUEST_501,
+    READY_RESPONSE_502,
+    PLAYER_GIVEUP_REQ_601,
+    PLAYER_GIVEUP_RES_602,
 }
