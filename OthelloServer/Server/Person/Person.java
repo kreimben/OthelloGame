@@ -1,6 +1,7 @@
 package Server.Person;
 
 import Server.Exceptions.GameOverException;
+import Server.Exceptions.PlayerOutException;
 import Server.InternetStream;
 import Server.Manager.RoomManager;
 import Server.OthelloServer;
@@ -55,17 +56,15 @@ public abstract class Person extends Thread implements Serializable {
     }
 
     //아웃풋 스트림 받음
-    public void setOos(ObjectOutputStream oos)
-    {
+    public void setOos(ObjectOutputStream oos) {
         this.oos = oos;
     }
 
-    public void setRoomName(String roomName){
+    public void setRoomName(String roomName) {
         this.roomName = roomName;
     }
 
-    public String getRoomName()
-    {
+    public String getRoomName() {
         return roomName;
     }
 
@@ -96,7 +95,7 @@ public abstract class Person extends Thread implements Serializable {
     }
 
     // 플레이어로부터 듣습니다. http서버에서 사용되는 response와 같습니다.
-    public abstract void listen() throws GameOverException;
+    public abstract void listen() throws GameOverException, PlayerOutException;
 
     // 방 이름으로 저장된 대국 정보들을 반환 합니다.
     protected String getHistory(String roomName) {

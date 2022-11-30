@@ -98,7 +98,7 @@ public class RoomManager extends Thread implements Serializable {
                 this.getInRoom(roomName, person); // `roomName`에 따른 방에 `person`을 집어 넣음.
                 this.makeHistory(roomName); // `history`에 방이름으로 대국 정보를 만듬.
                 person.start();
-                
+
                 OthelloServer.getInstance().printTextToServer("현재 참가자 수 " + clientList.size());
 
             } catch (Exception e) {

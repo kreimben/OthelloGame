@@ -1,4 +1,6 @@
 .idea/
+.metadata/
+out/
 
 
 ### Java template

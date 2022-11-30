@@ -103,12 +103,12 @@ public class OthelloView implements Serializable {
         this.port_no = port_no;
 
         //Board 생성
-        int boardPosX = f.getLocation().x +660; //프레임의 x크기 만큼 더해줌
+        int boardPosX = f.getLocation().x + 660; //프레임의 x크기 만큼 더해줌
         int boardPosY = f.getLocation().y;
         board = new OthelloBoard(this, boardPosX, boardPosY);
 
         //서버 연결
-        try{
+        try {
             //소켓 연결
             socket = new Socket(ip_addr, Integer.parseInt(port_no));
             oos = new ObjectOutputStream(socket.getOutputStream());
@@ -118,8 +118,7 @@ public class OthelloView implements Serializable {
             EnterRequest enterRequest = new EnterRequest(null, room_name, username);
             oos.writeObject(enterRequest);
             board.AppendText("서버 연결 성공");
-        }catch (Exception e)
-        {
+        } catch (Exception e) {
             board.AppendText("서버 연결 실패");
             e.printStackTrace();
         }
@@ -143,7 +142,7 @@ public class OthelloView implements Serializable {
                     int code = response.code; //응답의 코드
                     switch (code) //코드에 따라서 프로토콜 처리
                     {
-                        case 101 : //서버로부터 메세지를 받음
+                        case 101: //서버로부터 메세지를 받음
                             String message = response.message;
                             board.AppendText(message);
                             break;
@@ -211,9 +210,7 @@ public class OthelloView implements Serializable {
                             break;
                     }
 
-                }catch(Exception e)
-                {
-                    isGameStarted = true;
+                } catch (Exception e) {
                     board.AppendText("서버로부터 메세지 수신 실패");
                     e.printStackTrace();
                 }
@@ -262,8 +259,7 @@ public class OthelloView implements Serializable {
             oos.writeObject(quitRequest);
 
             System.exit(0);
-        }catch (Exception e)
-        {
+        } catch (Exception e) {
             board.AppendText("접속 종료 요청 에러..강제 종료 하세요");
             e.printStackTrace();
         }
@@ -410,7 +406,8 @@ public class OthelloView implements Serializable {
      */
     private void pass() {
         int z = Integer.parseInt(k.getText()); //현재 누구 차례인지 가져온다
-        if ((z % 2 != 0 && noValid(1, 0)) || (z % 2 == 0 && noValid(2, 0))) k.setText(String.valueOf(z + 1)); //돌을 둘 수 있는 칸이 없는지 검사 후 맞다면 k를 1 더해 차례를 넘긴다.
+        if ((z % 2 != 0 && noValid(1, 0)) || (z % 2 == 0 && noValid(2, 0)))
+            k.setText(String.valueOf(z + 1)); //돌을 둘 수 있는 칸이 없는지 검사 후 맞다면 k를 1 더해 차례를 넘긴다.
         else jNote.setText((jNote.getText()).substring(0, 12) + "  [Valid move possible]"); //돌을 둘 수 있는 칸이 있다면 경고메세지 출력
     }
 
