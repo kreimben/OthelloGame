@@ -8,6 +8,8 @@ import java.awt.Font;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.border.LineBorder;
 
 public class OthelloBoard extends JFrame {
@@ -19,9 +21,8 @@ public class OthelloBoard extends JFrame {
     private OthelloView view;
     private String username;
     private JLabel howManyPersonInRoom;
-
     private JButton readyBtn;
-
+    private JLabel userlist;
 
     public OthelloBoard(OthelloView view, int posX, int posY) {
         this.view = view;
@@ -43,7 +44,9 @@ public class OthelloBoard extends JFrame {
         //TextArea
         textArea = new JTextPane();
         textArea.setEditable(true);
+        textArea.setEnabled(false);
         textArea.setFont(new Font("굴림체", Font.PLAIN, 14));
+        textArea.setDisabledTextColor(Color.BLACK);
         scrollPane.setViewportView(textArea);
 
         //유저 이름
@@ -54,7 +57,6 @@ public class OthelloBoard extends JFrame {
         lblUserName.setHorizontalAlignment(SwingConstants.CENTER);
         lblUserName.setBounds(12, 490, 62, 40);
         contentPane.add(lblUserName);
-        setVisible(true);
 
         //채팅 텍스트필드
         txtInput = new JTextField();
@@ -71,7 +73,7 @@ public class OthelloBoard extends JFrame {
         //준비 버튼
         readyBtn = new JButton("준비");
         readyBtn.setFont(new Font("굴림", Font.PLAIN, 14));
-        readyBtn.setBounds(12, 540, 100, 40);
+        readyBtn.setBounds(12, 540, 80, 40);
         contentPane.add(readyBtn);
 
         //현재 방의 인원수 라벨
@@ -80,14 +82,22 @@ public class OthelloBoard extends JFrame {
         howManyPersonInRoom.setBackground(Color.WHITE);
         howManyPersonInRoom.setFont(new Font("굴림", Font.BOLD, 14));
         howManyPersonInRoom.setHorizontalAlignment(SwingConstants.CENTER);
-        howManyPersonInRoom.setBounds(122, 540, 150, 40);
+        howManyPersonInRoom.setBounds(102, 540, 150, 40);
         contentPane.add(howManyPersonInRoom);
-        setVisible(true);
 
         //접속 종료 버튼
         JButton btnDisConnect = new JButton("접속 종료");
-        btnDisConnect.setBounds(12, 590, 100, 40);
+        btnDisConnect.setBounds(262, 540, 100, 40);
         contentPane.add(btnDisConnect);
+
+        //방에 입장한 유저 이름들 출력
+        userlist = new JLabel("유저 리스트 : ");
+        userlist.setBorder(new LineBorder(new Color(0, 0, 0)));
+        userlist.setBackground(Color.WHITE);
+        userlist.setFont(new Font("굴림", Font.BOLD, 11));
+        userlist.setHorizontalAlignment(SwingConstants.LEFT);
+        userlist.setBounds(12, 590, 360, 40);
+        contentPane.add(userlist);
 
         //버튼 이벤트 등록
         SendChatMessageAction sendChatMessage = new SendChatMessageAction();
@@ -98,6 +108,8 @@ public class OthelloBoard extends JFrame {
 
         DisconnectAction disconnectAction = new DisconnectAction();
         btnDisConnect.addActionListener(disconnectAction);
+
+        setVisible(true);
     }
     class SendChatMessageAction implements ActionListener // 접속 종료 이벤트 발생
     {
@@ -170,5 +182,11 @@ public class OthelloBoard extends JFrame {
     public void disableReadyBtn()
     {
         readyBtn.setEnabled(false);
+    }
+
+    public void setUserlist(String names)
+    {
+        String text = String.format("방에 입장한 유저들 : %s", names);
+        userlist.setText(text);
     }
 }
