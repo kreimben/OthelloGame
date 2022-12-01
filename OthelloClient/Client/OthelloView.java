@@ -42,10 +42,14 @@ public class OthelloView implements Serializable {
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
     private boolean isConnected = true;
-    private int countPersonInRoom = 0;
-    private String type = "";
-    private int id;
+    private int howManyPersonInRoom = 0;
+    private String playerType = "";
+    private int typeId;
+    private boolean isRecored = false;
     private boolean isGameStarted = false;
+    private int frameWidth = 660;
+    private boolean isReady = false;
+    private boolean isPlayer2Ready = false;
 
     //----------------------------------------------------------------------------------------
 
@@ -77,13 +81,17 @@ public class OthelloView implements Serializable {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 jb[i][j].addActionListener(event -> {
-                    for (int i1 = 0; i1 < 8; i1++) {
-                        for (int j1 = 0; j1 < 8; j1++) { //for문으로 오셀로 판을 한바퀴 돌면서 이벤트가 발생한 버튼을 찾는다.
-                            if (event.getSource() == jb[i1][j1] && game == 0 && isGameStarted && (Integer.parseInt(k.getText()) % 2 == id) && type != "Observer") { //game이 0일때 즉, 게임이 진행중일때만 이벤트가 발동
-                                System.out.println("버튼 눌림");
-                                if (shown) hide(); //경우의 수가 보여지고 있다면 꺼준다. 유효한 수든 아니든 버튼이 눌리면 무조건 꺼줌
-                                click(i1, j1, Integer.parseInt(k.getText()), true); //실직적으로 이벤트를 처리하는 함수. 인자 : x, y, z(현재 누구 차례인지)
-                                k.setText(String.valueOf(Integer.parseInt(k.getText()) + 1)); //일단 돌을 놓았으므로, +1을 해줘 차례를 넘긴다
+                    boolean isMyTurnNow = Integer.parseInt(k.getText()) % 2 == typeId; //흑돌은 홀수, 백돌은 짝수
+                    boolean amIAPlayer = playerType.equals("Player"); //플레이어 타입이 "Player"인지
+                    if(game == 0 && isGameStarted && isMyTurnNow && amIAPlayer) //game이 0일때와 2명의 플레이어가 접속했을때만 이벤트가 발동
+                    {
+                        for (int i1 = 0; i1 < 8; i1++) {
+                            for (int j1 = 0; j1 < 8; j1++) { //for문으로 오셀로 판을 한바퀴 돌면서 이벤트가 발생한 버튼을 찾는다.
+                                if (event.getSource() == jb[i1][j1]) {
+                                    if (shown) hide(); //경우의 수가 보여지고 있다면 꺼준다. 유효한 수든 아니든 버튼이 눌리면 무조건 꺼줌
+                                    click(i1, j1, Integer.parseInt(k.getText()), true); //실직적으로 이벤트를 처리하는 함수. 인자 : x, y, z(현재 누구 차례인지), 내가 둔 수인지 알려주는 bool값
+                                    k.setText(String.valueOf(Integer.parseInt(k.getText()) + 1)); //일단 돌을 놓았으므로, +1을 해줘 차례를 넘긴다
+                                }
                             }
                         }
                     }
@@ -103,7 +111,7 @@ public class OthelloView implements Serializable {
         this.port_no = port_no;
 
         //Board 생성
-        int boardPosX = f.getLocation().x + 660; //프레임의 x크기 만큼 더해줌
+        int boardPosX = f.getLocation().x + frameWidth; //프레임의 x크기 만큼 더해줌
         int boardPosY = f.getLocation().y;
         board = new OthelloBoard(this, boardPosX, boardPosY);
 
@@ -140,81 +148,175 @@ public class OthelloView implements Serializable {
                 {
                     GeneralResponse response = (GeneralResponse) ois.readObject(); //서버로부터 응답 받음
                     int code = response.code; //응답의 코드
+                    
                     switch (code) //코드에 따라서 프로토콜 처리
                     {
                         case 101: //서버로부터 메세지를 받음
                             String message = response.message;
                             board.AppendText(message);
                             break;
-                        case 102:
+                        case 102: //상대방의 돌 정보를 받음
                             int x = ((GameResponse) response).getX();
                             int y = ((GameResponse) response).getY();
                             int z = Integer.parseInt(k.getText());
                             click(x, y, z, false);
-
-                            board.AppendText("상대 수 정보 받음");
-                            board.AppendText("현재 k : " + k.getText());
                             break;
                         case 204: //누군가 방에 접속함
-                            String enteredUsername = ((EnterResponse) response).getUserName();
-                            String roomName = ((EnterResponse) response).getRoomName();
-                            countPersonInRoom = Integer.parseInt(response.message);
+                            String enteredUsername = ((EnterResponse) response).getUserName(); //접속한 유저의 이름
+                            String roomName = ((EnterResponse) response).getRoomName(); //접속한 방의 이름
+                            howManyPersonInRoom = Integer.parseInt(response.message); //현재 방에 접속해있는 사람 숫자
 
-                            /*
-                            if(type == "")
-                            {
-                                type = countPersonInRoom <= 2 ? "Player" + countPersonInRoom : "Observer" + countPersonInRoom;
-                            }
-                             */
-
+                            //메세지 출력
                             board.AppendText(enteredUsername + "님이 " + roomName + " 에 접속하셨습니다.");
-                            board.AppendText("현재 방 인원 수 : " + countPersonInRoom);
+                            board.AppendText("현재 방 인원 수 : " + howManyPersonInRoom);
 
-                            if(countPersonInRoom == 1 && type == "")
+                            //본인이 처음 방에 들어왔을때 필요한 로직 처리.
+                            if(!isRecored)
                             {
-                                System.out.println("첫번째 플레이어는 : " + this);
-                                id = 1;
-                                type = "Player";
-                                board.AppendText("Player2를 기다리는 중...");
+                                firstEnterInRoom();
                             }
-                            if(countPersonInRoom == 2 && type == "")
-                            {
-                                System.out.println("두번째 플레이어는 : " + this);
-                                id = 0;
-                                type = "Player";
-                                int startCode = PC.getInstance().convert(ProtocolNumber.GameStart_400);
-                                GeneralRequest gameStartRequest = new GeneralRequest(startCode, null, "GameStart");
-                                oos.writeObject(gameStartRequest);
-                            }
-                            if(countPersonInRoom == 3 && type == "")
-                            {
-                                System.out.println("세번째 플레이어는 : " + this);
-                                type = "Observer";
-                                int historyReqCode = PC.getInstance().convert(ProtocolNumber.HISTORY_REQUEST_301);
-                                GeneralRequest historyRequest = new GeneralRequest(historyReqCode, null, username);
-                                oos.writeObject(historyRequest);
-                            }
-                            board.AppendText("당신은 " + type + countPersonInRoom + "입니다.");
+
+                            //인원 수 라벨 조정
+                            board.setHowManyPersonInRoomText(howManyPersonInRoom);
                             break;
-                        case 302:
+                        case 205: //누군가 접속 종료함
+                            String disconnectedUsername = response.message; //접속 종료한 유저의 이름
+                            howManyPersonInRoom--; //현재 방의 인원수를 -1 함
+                            board.AppendText(disconnectedUsername + "님이 나가셨습니다."); //메세지 출력
+                            board.AppendText("현재 방 인원 수 : " + howManyPersonInRoom); //메세지 출력
+
+                            //인원 수 라벨 조정
+                            board.setHowManyPersonInRoomText(howManyPersonInRoom);
+                            break;
+                        case 302: //서버로부터 히스토리를 받음
                             String history = ((HistoryResponse) response).getHistory();
                             loadHistory(history);
-                        case 401:
+                        case 401: //게임시작
                             isGameStarted = true;
-                            board.AppendText(username + "is Ready" + response.message);
+                            board.disableReadyBtn();
+                            board.AppendText(response.message);
                             break;
-                        case 403:
+                        case 403: //게임 종료
                             isGameStarted = false;
                             board.AppendText(response.message);
-                            System.out.println("isGameStarted : " + isGameStarted);
                             break;
-                    }
+                        case 502: //Player2가 준비 버튼을 누름
+                            if(typeId == 1)
+                            {
+                                isPlayer2Ready = !isPlayer2Ready;
+                                String player2name = response.message;
+                                String text = isPlayer2Ready ? "가 준비했습니다." : "가 준비를 해제했습니다.";
+                                board.AppendText(player2name + text);
+                            }
+                            break;
+                        case 602:
+                            String leftUserType = response.message;
+                            if(leftUserType == "1")
+                            {
 
+                                board.AppendText("Player2 퇴장. Player1 승리");
+                            }
+                            else
+                            {
+                                board.AppendText("Player1 퇴장. Player2 승리");
+                            }
+                            int endCode = PC.getInstance().convert(ProtocolNumber.GameEnd_402);
+                            GeneralResponse gameOverResponse = new GeneralResponse(endCode, null, "플레이어 퇴장. 경기 중단");
+                            oos.writeObject(gameOverResponse);
+                            break;
+
+                    }
                 } catch (Exception e) {
-                    board.AppendText("서버로부터 메세지 수신 실패");
+                    //board.AppendText("서버로부터 수신 실패");
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    public void readyToggle()
+    {
+        try
+        {
+            if(typeId == 1)
+            {
+                if(isPlayer2Ready) GameStart();
+                else board.AppendText("상대방이 준비 상태가 아닙니다.");
+            }
+            else
+            {
+                isReady = !isReady;
+                board.setReadyBtnText(isReady);
+                //준비 상태를 모두에게 알림
+                int code = PC.getInstance().convert(ProtocolNumber.READY_REQUEST_501);
+                GeneralRequest readyRequest = new GeneralRequest(code, null, username);
+                oos.writeObject(readyRequest);
+            }
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void GameStart()
+    {
+        try
+        {
+            int gameStartCode = PC.getInstance().convert(ProtocolNumber.GameStart_400);
+            GeneralRequest gameStartRequest = new GeneralRequest(gameStartCode, null, "Game Start");
+            oos.writeObject(gameStartRequest);
+        }catch (Exception e)
+        {
+            board.AppendText("게임 시작 에러");
+            e.printStackTrace();
+        }
+    }
+
+    public void firstEnterInRoom()
+    {
+        try{
+            //타입
+            playerType = howManyPersonInRoom <= 2 ? "Player" : "Observer";
+            typeId = howManyPersonInRoom;
+            if(howManyPersonInRoom == 2) typeId = 0;
+            if(playerType.equals("Observer")) typeId -= 2;
+            isRecored = true;
+
+            //준비 버튼 초기화
+            board.initReadyBtn(playerType, typeId);
+    
+            //메세지 출력
+            String myInfo = "";
+            if(playerType.equals("Player"))
+            {
+                //메세지
+                String stone = typeId == 1 ? "흑돌" : "백돌";
+                String attack = typeId == 1 ? "선공" : "후공";
+                String id = typeId == 1 ? "1" : "2";
+                String typeInfo = playerType + id;
+                myInfo = String.format("[SYSTEM] : 당신은 %s입니다. %s, %s을 가집니다.", typeInfo, stone, attack);
+            }
+            else
+            {
+                myInfo = String.format("[SYSTEM] : 당신은 %s입니다. 관전 및 채팅이 가능합니다.", playerType + Integer.toString(typeId));
+            }
+            board.AppendText(myInfo);
+    
+            //상대방을 기다리는중(Player1) || 히스토리 불러오기(Observer)
+            if(playerType.equals("Player"))
+            {
+                if(typeId == 1) board.AppendText("상대방을 기다리는 중...");
+            }
+            else
+            {
+                int historyRequestCode = PC.getInstance().convert(ProtocolNumber.HISTORY_REQUEST_301);
+                GeneralRequest historyRequest = new GeneralRequest(historyRequestCode, null, username);
+                oos.writeObject(historyRequest);
+            }
+        }catch (Exception e)
+        {
+            board.AppendText("방 입장 에러");
+            e.printStackTrace();
         }
     }
 
@@ -226,7 +328,6 @@ public class OthelloView implements Serializable {
             String [] detail = list[i].split(",");
             int x = Integer.parseInt(detail[0]);
             int y = Integer.parseInt(detail[1]);
-            System.out.println("x : " + x + ", " + "y : " + y);
             click(x, y, i + 1, false);
         }
     }
@@ -258,6 +359,13 @@ public class OthelloView implements Serializable {
             GeneralRequest quitRequest = new GeneralRequest(code, null, username);
             oos.writeObject(quitRequest);
 
+            if(playerType.equals("Player"))
+            {
+                int giveUpcode = PC.getInstance().convert(ProtocolNumber.PLAYER_GIVEUP_REQ_601);
+                GeneralRequest giveUpRequest = new GeneralRequest(giveUpcode, null, Integer.toString(typeId));
+                oos.writeObject(giveUpRequest);
+            }
+
             System.exit(0);
         } catch (Exception e) {
             board.AppendText("접속 종료 요청 에러..강제 종료 하세요");
@@ -276,7 +384,7 @@ public class OthelloView implements Serializable {
         f.getContentPane().setBackground(new Color(80, 48, 12));
         f.pack();
         f.setBackground(new Color(80, 48, 12));
-        f.setSize(660, 830);
+        f.setSize(frameWidth, 830);
         f.setResizable(false);
         f.setVisible(true);
         return f;
@@ -362,9 +470,9 @@ public class OthelloView implements Serializable {
         jPass.setFont(new Font("Arial", Font.BOLD, 24));
         jPass.setBorder(new LineBorder(new Color(240, 230, 181)));
         jPass.addActionListener(event -> {
+            if(playerType.equals("Observer")) return;
             if(isGameStarted == false) return;
-            if(Integer.parseInt(k.getText()) % 2 != id) return;
-            if(type == "Observer") return;
+            if(Integer.parseInt(k.getText()) % 2 != typeId) return;
 
             if (shown) hide(); //패스 버튼을 누르면 무조건 경우의 수 꺼줌
             pass();
@@ -389,9 +497,9 @@ public class OthelloView implements Serializable {
         jShow.setFont(new Font("Arial", Font.BOLD, 24));
         jShow.setBorder(new LineBorder(new Color(240, 230, 181)));
         jShow.addActionListener(event -> {
+            if(playerType.equals("Observer")) return;
             if(isGameStarted == false) return;
-            if(Integer.parseInt(k.getText()) % 2 != id) return;
-            if(type == "Observer") return;
+            if(Integer.parseInt(k.getText()) % 2 != typeId) return;
 
             if (shown) hide(); //켜져있으면 꺼줌
             else show(); //꺼져있으면 켜줌
@@ -576,7 +684,6 @@ public class OthelloView implements Serializable {
             }
             else
                 k.setText(String.valueOf(Integer.parseInt(k.getText()) + 1));
-            System.out.println("내가 수 두고 난후 : " + k.getText());
             if (z % 2 != 0) jNote.setText("White's turn"); //돌을 둔 사람이 흑이면 백의 차례라고 출력
             else jNote.setText("Black's turn"); //돌을 둔 사람이 백이면 흑의 차례라고 출력
         }

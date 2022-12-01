@@ -50,6 +50,14 @@ public class PC {
                 return 402;
             case GameEnd_403:
                 return 403;
+            case READY_REQUEST_501:
+                return 501;
+            case READY_RESPONSE_502:
+                return 502;
+            case PLAYER_GIVEUP_REQ_601:
+                return 601;
+            case PLAYER_GIVEUP_RES_602:
+                return 602;
             default:
                 return 0;
         }

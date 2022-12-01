@@ -18,6 +18,10 @@ public class OthelloBoard extends JFrame {
     private JButton btnSend;
     private OthelloView view;
     private String username;
+    private JLabel howManyPersonInRoom;
+
+    private JButton readyBtn;
+
 
     public OthelloBoard(OthelloView view, int posX, int posY) {
         this.view = view;
@@ -25,7 +29,7 @@ public class OthelloBoard extends JFrame {
 
         //Frame
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(posX, posY, 394, 630);
+        setBounds(posX, posY, 394, 730);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
@@ -59,21 +63,38 @@ public class OthelloBoard extends JFrame {
         txtInput.setColumns(10);
 
         //전송 버튼
-        btnSend = new JButton("Send");
+        btnSend = new JButton("전송");
         btnSend.setFont(new Font("굴림", Font.PLAIN, 14));
         btnSend.setBounds(300, 490, 69, 40);
         contentPane.add(btnSend);
 
-        //접속 종료 버튼
-        JButton btnDisConnect = new JButton("Disconnect");
-        btnDisConnect.setBounds(12, 540, 100, 40);
-        contentPane.add(btnDisConnect);
+        //준비 버튼
+        readyBtn = new JButton("준비");
+        readyBtn.setFont(new Font("굴림", Font.PLAIN, 14));
+        readyBtn.setBounds(12, 540, 100, 40);
+        contentPane.add(readyBtn);
 
+        //현재 방의 인원수 라벨
+        howManyPersonInRoom = new JLabel("현재 인원수 : 1");
+        howManyPersonInRoom.setBorder(new LineBorder(new Color(0, 0, 0)));
+        howManyPersonInRoom.setBackground(Color.WHITE);
+        howManyPersonInRoom.setFont(new Font("굴림", Font.BOLD, 14));
+        howManyPersonInRoom.setHorizontalAlignment(SwingConstants.CENTER);
+        howManyPersonInRoom.setBounds(122, 540, 150, 40);
+        contentPane.add(howManyPersonInRoom);
+        setVisible(true);
+
+        //접속 종료 버튼
+        JButton btnDisConnect = new JButton("접속 종료");
+        btnDisConnect.setBounds(12, 590, 100, 40);
+        contentPane.add(btnDisConnect);
 
         //버튼 이벤트 등록
         SendChatMessageAction sendChatMessage = new SendChatMessageAction();
+        ReadyAction readyAction = new ReadyAction();
         btnSend.addActionListener(sendChatMessage);
         txtInput.addActionListener(sendChatMessage);
+        readyBtn.addActionListener(readyAction);
 
         DisconnectAction disconnectAction = new DisconnectAction();
         btnDisConnect.addActionListener(disconnectAction);
@@ -94,12 +115,19 @@ public class OthelloBoard extends JFrame {
         }
     }
 
-
     class DisconnectAction implements ActionListener // 접속 종료 이벤트 발생
     {
         @Override
         public void actionPerformed(ActionEvent e) {
             view.Discconect();
+        }
+    }
+
+    class ReadyAction implements ActionListener // 접속 종료 이벤트 발생
+    {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            view.readyToggle();
         }
     }
 
@@ -112,5 +140,35 @@ public class OthelloBoard extends JFrame {
         // 끝으로 이동
         textArea.setCaretPosition(len);
         textArea.replaceSelection(msg + "\n");
+    }
+
+    public void setHowManyPersonInRoomText(int howMany)
+    {
+        String text = String.format("현재 인원 수 : %d", howMany);
+        howManyPersonInRoom.setText(text);
+    }
+
+    public void initReadyBtn(String playerType, int typeId)
+    {
+        if(playerType.equals("Player"))
+        {
+            String text = typeId == 1 ? "시작" : "준비";
+            readyBtn.setText(text);
+        }
+        else
+        {
+            readyBtn.setEnabled(false);
+        }
+    }
+
+    public void setReadyBtnText(boolean isReady)
+    {
+        String text = isReady ? "준비 해제" : "준비";
+        readyBtn.setText(text);
+    }
+
+    public void disableReadyBtn()
+    {
+        readyBtn.setEnabled(false);
     }
 }
