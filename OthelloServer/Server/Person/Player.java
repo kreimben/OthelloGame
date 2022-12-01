@@ -48,7 +48,7 @@ public class Player extends Person implements Serializable {
                     int x = ((GameRequest) req).getX();
                     int y = ((GameRequest) req).getY();
                     rm.broadcastOthers(new GameResponse( // 102 좌표를 이용해 플레이함 response. s -> c
-                            null, super.userName, x, y), super.userName);
+                            null, super.userName, x, y), super.userName, super.roomName);
                 }
                 case 104 -> {
                     // 104 채팅 request. c -> s
@@ -57,7 +57,7 @@ public class Player extends Person implements Serializable {
                                     PC.getInstance().convert(ProtocolNumber.RESPONSE_101), // 101 General Response
                                     null,
                                     req.message
-                            )
+                            ), roomName
                     );
                 }
                 case 202 -> {
@@ -65,7 +65,7 @@ public class Player extends Person implements Serializable {
                     // 만약 `player instanceof Player`를 이용한다면 플레이어인지, 옵저버인지 체크 할 수 있습니다.
                     // 202 방에 입장 request. c -> s
                     String roomSize = Integer.toString(RoomManager.getRooms().get(roomName).size()); //방에 몇명이 있는지
-                    rm.broadcast(new EnterResponse(userName, roomName, roomSize)); // 204 방에 입장 response. s -> c
+                    rm.broadcast(new EnterResponse(userName, roomName, roomSize), roomName); // 204 방에 입장 response. s -> c
                 }
                 case 203 -> { // 접속 종료
                     //1. 룸 유저 리스트에서 해당 유저 제거
@@ -80,7 +80,7 @@ public class Player extends Person implements Serializable {
                     //3. 통신
                     int code = PC.getInstance().convert(ProtocolNumber.QUIT_CONNECT_205);
                     GeneralResponse someoneDisconnectResponse = new GeneralResponse(code, null, req.message); //req.message는 접속종료한 유저의 이름
-                    rm.broadcast(someoneDisconnectResponse); //모든 유저에게 전송
+                    rm.broadcast(someoneDisconnectResponse, roomName); //모든 유저에게 전송
 
                     //4. 출력
                     OthelloServer.getInstance().printTextToServer(req.message + "님이 접속 종료 하셨습니다.");
@@ -92,13 +92,13 @@ public class Player extends Person implements Serializable {
                     OthelloServer.getInstance().printTextToServer("Game Start");
                     int code = PC.getInstance().convert(ProtocolNumber.GameStart_401);
                     GeneralResponse gameStartResponse = new GeneralResponse(code, null, "Game Start");
-                    rm.broadcast(gameStartResponse);
+                    rm.broadcast(gameStartResponse, roomName);
                 }
                 case 402 -> {
                     OthelloServer.getInstance().printTextToServer(req.message);
                     int code = PC.getInstance().convert(ProtocolNumber.GameEnd_403);
                     GeneralResponse gameEndResponse = new GeneralResponse(code, null, req.message);
-                    rm.broadcast(gameEndResponse);
+                    rm.broadcast(gameEndResponse, roomName);
                 }
                 case 501 -> {
                     rm.broadcast(
@@ -106,7 +106,7 @@ public class Player extends Person implements Serializable {
                                     PC.getInstance().convert(ProtocolNumber.READY_RESPONSE_502), // 101 General Response
                                     null,
                                     req.message
-                            )
+                            ), roomName
                     );
                 }
                 case 601 -> {
@@ -115,7 +115,7 @@ public class Player extends Person implements Serializable {
                                     PC.getInstance().convert(ProtocolNumber.PLAYER_GIVEUP_RES_602), // 101 General Response
                                     null,
                                     req.message
-                            )
+                            ), roomName
                     );
                 }
                 default ->

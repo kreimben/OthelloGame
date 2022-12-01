@@ -213,7 +213,6 @@ public class OthelloView implements Serializable {
                             String leftUserType = response.message;
                             if(leftUserType == "1")
                             {
-
                                 board.AppendText("Player2 퇴장. Player1 승리");
                             }
                             else
