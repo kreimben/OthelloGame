@@ -111,15 +111,17 @@ public class RoomManager extends Thread implements Serializable {
     /*
      * player이건 observer이건 모두에게 메세지를 보냅니다.
      */
-    public void broadcast(Object obj) {
-        for (Person person : clientList) {
+    public void broadcast(Object obj, String roomname) {
+        var list = RoomManager.getRooms().get(roomname);
+        for (Person person : list) {
             person.say(obj);
         }
     }
 
-    public void broadcastOthers(Object obj, String username)
+    public void broadcastOthers(Object obj, String username, String roomname)
     {
-        for(Person person : clientList)
+        var list = RoomManager.getRooms().get(roomname);
+        for(Person person : list)
         {
             if(person.getUserName().equals(username)) continue;
             System.out.println(person.getUserName());
@@ -158,7 +160,7 @@ public class RoomManager extends Thread implements Serializable {
                         PC.getInstance().convert(ProtocolNumber.RESPONSE_101),
                         person,
                         message
-                ));
+                ), person.getRoomName());
     }
 
     // 예제코드 레거시. 언제 수정되거나 없어질지 모릅니다.
@@ -169,7 +171,7 @@ public class RoomManager extends Thread implements Serializable {
                 new GeneralResponse(
                         PC.getInstance().convert(ProtocolNumber.QUIT_CONNECT_203),
                         person,
-                        message));
+                        message), person.getRoomName());
         OthelloServer.getInstance().printTextToServer("사용자 " + "[" + person.getUserName() + "] 퇴장.\n");
         OthelloServer.getInstance().printTextToServer("현재 참가자 수 " + clientList.size() + "\n");
     }
@@ -183,7 +185,7 @@ public class RoomManager extends Thread implements Serializable {
 
         String personCountInRoom = Integer.toString(list.size()); //현재 방에 있는 사람 수
         EnterResponse someoneEnteredResponse = new EnterResponse(person.getUserName(), person.getRoomName(), personCountInRoom); //현재 방에 접속한 사람과, 사람 수의 정보를 제공
-        broadcast(someoneEnteredResponse); //모든 클라이언트에게 전송
+        broadcast(someoneEnteredResponse, roomName); //모든 클라이언트에게 전송
         /*
         if (list.size() == 2) {
             this.broadcast(
