@@ -677,6 +677,7 @@ public class OthelloView implements Serializable {
             jb[x][y].setForeground(Color.white); //버튼의 색을 하얀색으로 칠함
             mat[x][y] = 2; //백돌이 있음을 기록
         }
+        // TODO: Alter to image.
         jb[x][y].setText("⚫"); //돌 모양 텍스트로 돌이 있음을 알림
         // ----- 선 조치
 
@@ -930,6 +931,7 @@ public class OthelloView implements Serializable {
      */
     private void initialise() {
         jb[3][3].setForeground(Color.white);
+        // TODO: Alter to image.
         jb[3][3].setText("⚫");
         jb[4][4].setForeground(Color.white);
         jb[4][4].setText("⚫");
