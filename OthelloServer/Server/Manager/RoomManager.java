@@ -184,7 +184,17 @@ public class RoomManager extends Thread implements Serializable {
         RoomManager.rooms.put(roomName, list);
 
         String personCountInRoom = Integer.toString(list.size()); //현재 방에 있는 사람 수
-        EnterResponse someoneEnteredResponse = new EnterResponse(person.getUserName(), person.getRoomName(), personCountInRoom); //현재 방에 접속한 사람과, 사람 수의 정보를 제공
+        String usernameList = "";
+        for(int i=0; i<list.size(); i++)
+        {
+            if(i == list.size() -1)
+            {
+                usernameList += list.get(i).getUserName();
+            }
+            else
+                usernameList += (list.get(i).getUserName() + ",");
+        }
+        EnterResponse someoneEnteredResponse = new EnterResponse(person.getUserName(), person.getRoomName(), personCountInRoom, usernameList); //현재 방에 접속한 사람과, 사람 수의 정보를 제공
         broadcast(someoneEnteredResponse, roomName); //모든 클라이언트에게 전송
         /*
         if (list.size() == 2) {

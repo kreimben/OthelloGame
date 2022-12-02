@@ -46,8 +46,19 @@ public class Observer extends Person implements Serializable {
                     // 입장할 때 클라이언트가 플레이어인지, 옵저버인지 `instanceof`로 체크하세요.
                     // 만약 `player instanceof Player`를 이용한다면 플레이어인지, 옵저버인지 체크 할 수 있습니다.
                     // 202 방에 입장 request. c -> s
-                    String roomSize = Integer.toString(RoomManager.getRooms().get(roomName).size()); //방에 몇명이 있는지
-                    rm.broadcast(new EnterResponse(userName, roomName, roomSize), roomName); // 204 방에 입장 response. s -> c
+                    var roomInfo = RoomManager.getRooms().get(roomName);
+                    String roomSize = Integer.toString(roomInfo.size()); //방에 몇명이 있는지
+                    String usernameList = "";
+                    for(int i=0; i<roomInfo.size(); i++)
+                    {
+                        if(i == roomInfo.size() -1)
+                        {
+                            usernameList += roomInfo.get(i).getUserName();
+                        }
+                        else
+                            usernameList += (roomInfo.get(i).getUserName() + ",");
+                    }
+                    rm.broadcast(new EnterResponse(userName, roomName, roomSize, usernameList), roomName); // 204 방에 입장 response. s -> c
                 }
                 case 203 -> {
                     //1. 룸 유저 리스트에서 해당 유저 제거

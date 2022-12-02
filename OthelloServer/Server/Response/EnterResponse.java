@@ -6,11 +6,12 @@ public class EnterResponse extends GeneralResponse {
     // 204 방에 입장 response. s -> c
     private String roomName;
     private String userName;
-
-    public EnterResponse(String userName, String roomName, String roomSize) {
+    public String usernameList;
+    public EnterResponse(String userName, String roomName, String roomSize, String usernameList) {
         super(204, null, roomSize);
         this.roomName = roomName;
         this.userName = userName;
+        this.usernameList = usernameList;
     }
 
     public String getUserName() {

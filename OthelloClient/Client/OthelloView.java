@@ -17,6 +17,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 관심사 분리를 위한 인위적인 View 클래스 입니다.
@@ -50,6 +52,8 @@ public class OthelloView implements Serializable {
     private int frameWidth = 660;
     private boolean isReady = false;
     private boolean isPlayer2Ready = false;
+
+    private List<String> usernames = new ArrayList<String>();
 
     //----------------------------------------------------------------------------------------
 
@@ -165,6 +169,12 @@ public class OthelloView implements Serializable {
                             String enteredUsername = ((EnterResponse) response).getUserName(); //접속한 유저의 이름
                             String roomName = ((EnterResponse) response).getRoomName(); //접속한 방의 이름
                             howManyPersonInRoom = Integer.parseInt(response.message); //현재 방에 접속해있는 사람 숫자
+                            String [] mylist = ((EnterResponse) response).usernameList.split(",");
+                            usernames.clear();
+                            for(String name : mylist) usernames.add(name);
+
+                            //board
+                            board.setUserlist(((EnterResponse) response).usernameList);
 
                             //메세지 출력
                             board.AppendText(enteredUsername + "님이 " + roomName + " 에 접속하셨습니다.");
@@ -182,6 +192,18 @@ public class OthelloView implements Serializable {
                         case 205: //누군가 접속 종료함
                             String disconnectedUsername = response.message; //접속 종료한 유저의 이름
                             howManyPersonInRoom--; //현재 방의 인원수를 -1 함
+
+                            //board
+                            usernames.remove(disconnectedUsername);
+                            String nameList = "";
+                            for(int i=0; i<usernames.size(); i++)
+                            {
+                                if(i == usernames.size() - 1) nameList+=usernames.get(i);
+                                else nameList+=(usernames.get(i)+",");
+                            }
+                            board.setUserlist(nameList);
+
+                            //메세지출력
                             board.AppendText(disconnectedUsername + "님이 나가셨습니다."); //메세지 출력
                             board.AppendText("현재 방 인원 수 : " + howManyPersonInRoom); //메세지 출력
 
