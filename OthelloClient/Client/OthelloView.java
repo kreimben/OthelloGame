@@ -10,15 +10,17 @@ import Server.Response.GameResponse;
 import Server.Response.GeneralResponse;
 import Server.Response.HistoryResponse;
 
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.lang.System.exit;
 
 /**
  * 관심사 분리를 위한 인위적인 View 클래스 입니다.
@@ -87,7 +89,7 @@ public class OthelloView implements Serializable {
                 jb[i][j].addActionListener(event -> {
                     boolean isMyTurnNow = Integer.parseInt(k.getText()) % 2 == typeId; //흑돌은 홀수, 백돌은 짝수
                     boolean amIAPlayer = playerType.equals("Player"); //플레이어 타입이 "Player"인지
-                    if(game == 0 && isGameStarted && isMyTurnNow && amIAPlayer) //game이 0일때와 2명의 플레이어가 접속했을때만 이벤트가 발동
+                    if (game == 0 && isGameStarted && isMyTurnNow && amIAPlayer) //game이 0일때와 2명의 플레이어가 접속했을때만 이벤트가 발동
                     {
                         for (int i1 = 0; i1 < 8; i1++) {
                             for (int j1 = 0; j1 < 8; j1++) { //for문으로 오셀로 판을 한바퀴 돌면서 이벤트가 발생한 버튼을 찾는다.
@@ -142,22 +144,19 @@ public class OthelloView implements Serializable {
         //----------------------------------------------------------------------------------------
     }
 
-    public class Listen extends Thread
-    {
-        public void run()
-        {
-            while(isConnected)
-            {
-                try
-                {
+    public class Listen extends Thread {
+        public void run() {
+            while (isConnected) {
+                try {
                     GeneralResponse response = (GeneralResponse) ois.readObject(); //서버로부터 응답 받음
                     int code = response.code; //응답의 코드
-                    
+
                     switch (code) //코드에 따라서 프로토콜 처리
                     {
                         case 101: //서버로부터 메세지를 받음
                             String message = response.message;
                             board.AppendText(message);
+                            OthelloView.playSound("./OthelloClient/assets/bell.wav");
                             break;
                         case 102: //상대방의 돌 정보를 받음
                             int x = ((GameResponse) response).getX();
@@ -169,9 +168,9 @@ public class OthelloView implements Serializable {
                             String enteredUsername = ((EnterResponse) response).getUserName(); //접속한 유저의 이름
                             String roomName = ((EnterResponse) response).getRoomName(); //접속한 방의 이름
                             howManyPersonInRoom = Integer.parseInt(response.message); //현재 방에 접속해있는 사람 숫자
-                            String [] mylist = ((EnterResponse) response).usernameList.split(",");
+                            String[] mylist = ((EnterResponse) response).usernameList.split(",");
                             usernames.clear();
-                            for(String name : mylist) usernames.add(name);
+                            for (String name : mylist) usernames.add(name);
 
                             //board
                             board.setUserlist(((EnterResponse) response).usernameList);
@@ -181,8 +180,7 @@ public class OthelloView implements Serializable {
                             board.AppendText("현재 방 인원 수 : " + howManyPersonInRoom);
 
                             //본인이 처음 방에 들어왔을때 필요한 로직 처리.
-                            if(!isRecored)
-                            {
+                            if (!isRecored) {
                                 firstEnterInRoom();
                             }
 
@@ -196,10 +194,9 @@ public class OthelloView implements Serializable {
                             //board
                             usernames.remove(disconnectedUsername);
                             String nameList = "";
-                            for(int i=0; i<usernames.size(); i++)
-                            {
-                                if(i == usernames.size() - 1) nameList+=usernames.get(i);
-                                else nameList+=(usernames.get(i)+",");
+                            for (int i = 0; i < usernames.size(); i++) {
+                                if (i == usernames.size() - 1) nameList += usernames.get(i);
+                                else nameList += (usernames.get(i) + ",");
                             }
                             board.setUserlist(nameList);
 
@@ -217,14 +214,14 @@ public class OthelloView implements Serializable {
                             isGameStarted = true;
                             board.disableReadyBtn();
                             board.AppendText(response.message);
+                            OthelloView.playSound("./OthelloClient/assets/go.wav");
                             break;
                         case 403: //게임 종료
                             isGameStarted = false;
                             board.AppendText(response.message);
                             break;
                         case 502: //Player2가 준비 버튼을 누름
-                            if(typeId == 1)
-                            {
+                            if (typeId == 1) {
                                 isPlayer2Ready = !isPlayer2Ready;
                                 String player2name = response.message;
                                 String text = isPlayer2Ready ? "가 준비했습니다." : "가 준비를 해제했습니다.";
@@ -233,12 +230,9 @@ public class OthelloView implements Serializable {
                             break;
                         case 602:
                             String leftUserType = response.message;
-                            if(leftUserType == "1")
-                            {
+                            if (leftUserType == "1") {
                                 board.AppendText("Player2 퇴장. Player1 승리");
-                            }
-                            else
-                            {
+                            } else {
                                 board.AppendText("Player1 퇴장. Player2 승리");
                             }
                             int endCode = PC.getInstance().convert(ProtocolNumber.GameEnd_402);
@@ -255,17 +249,12 @@ public class OthelloView implements Serializable {
         }
     }
 
-    public void readyToggle()
-    {
-        try
-        {
-            if(typeId == 1)
-            {
-                if(isPlayer2Ready) GameStart();
+    public void readyToggle() {
+        try {
+            if (typeId == 1) {
+                if (isPlayer2Ready) GameStart();
                 else board.AppendText("상대방이 준비 상태가 아닙니다.");
-            }
-            else
-            {
+            } else {
                 isReady = !isReady;
                 board.setReadyBtnText(isReady);
                 //준비 상태를 모두에게 알림
@@ -273,100 +262,82 @@ public class OthelloView implements Serializable {
                 GeneralRequest readyRequest = new GeneralRequest(code, null, username);
                 oos.writeObject(readyRequest);
             }
-        }catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void GameStart()
-    {
-        try
-        {
+    public void GameStart() {
+        try {
             int gameStartCode = PC.getInstance().convert(ProtocolNumber.GameStart_400);
             GeneralRequest gameStartRequest = new GeneralRequest(gameStartCode, null, "Game Start");
             oos.writeObject(gameStartRequest);
-        }catch (Exception e)
-        {
+        } catch (Exception e) {
             board.AppendText("게임 시작 에러");
             e.printStackTrace();
         }
     }
 
-    public void firstEnterInRoom()
-    {
-        try{
+    public void firstEnterInRoom() {
+        try {
             //타입
             playerType = howManyPersonInRoom <= 2 ? "Player" : "Observer";
             typeId = howManyPersonInRoom;
-            if(howManyPersonInRoom == 2) typeId = 0;
-            if(playerType.equals("Observer")) typeId -= 2;
+            if (howManyPersonInRoom == 2) typeId = 0;
+            if (playerType.equals("Observer")) typeId -= 2;
             isRecored = true;
 
             //준비 버튼 초기화
             board.initReadyBtn(playerType, typeId);
-    
+
             //메세지 출력
             String myInfo = "";
-            if(playerType.equals("Player"))
-            {
+            if (playerType.equals("Player")) {
                 //메세지
                 String stone = typeId == 1 ? "흑돌" : "백돌";
                 String attack = typeId == 1 ? "선공" : "후공";
                 String id = typeId == 1 ? "1" : "2";
                 String typeInfo = playerType + id;
                 myInfo = String.format("[SYSTEM] : 당신은 %s입니다. %s, %s을 가집니다.", typeInfo, stone, attack);
-            }
-            else
-            {
+            } else {
                 myInfo = String.format("[SYSTEM] : 당신은 %s입니다. 관전 및 채팅이 가능합니다.", playerType + Integer.toString(typeId));
             }
             board.AppendText(myInfo);
-    
+
             //상대방을 기다리는중(Player1) || 히스토리 불러오기(Observer)
-            if(playerType.equals("Player"))
-            {
-                if(typeId == 1) board.AppendText("상대방을 기다리는 중...");
-            }
-            else
-            {
+            if (playerType.equals("Player")) {
+                if (typeId == 1) board.AppendText("상대방을 기다리는 중...");
+            } else {
                 int historyRequestCode = PC.getInstance().convert(ProtocolNumber.HISTORY_REQUEST_301);
                 GeneralRequest historyRequest = new GeneralRequest(historyRequestCode, null, username);
                 oos.writeObject(historyRequest);
             }
-        }catch (Exception e)
-        {
+        } catch (Exception e) {
             board.AppendText("방 입장 에러");
             e.printStackTrace();
         }
     }
 
-    public void loadHistory(String history)
-    {
+    public void loadHistory(String history) {
         String[] list = history.split(":");
-        for(int i=0; i<list.length; i++)
-        {
-            String [] detail = list[i].split(",");
+        for (int i = 0; i < list.length; i++) {
+            String[] detail = list[i].split(",");
             int x = Integer.parseInt(detail[0]);
             int y = Integer.parseInt(detail[1]);
             click(x, y, i + 1, false);
         }
     }
 
-    public String getUserName()
-    {
+    public String getUserName() {
         return username;
     }
 
-    public void sendChatMessage(String message)
-    {
-        try
-        {
+    public void sendChatMessage(String message) {
+        try {
             int code = PC.getInstance().convert(ProtocolNumber.CHAT_104);
             GeneralRequest chatMessageRequest = new GeneralRequest(code, null, message);
             oos.writeObject(chatMessageRequest);
-        }catch(Exception e)
-        {
+        } catch (Exception e) {
             board.AppendText("메세지 송신 오류");
             e.printStackTrace();
         }
@@ -374,20 +345,19 @@ public class OthelloView implements Serializable {
     }
 
     public void Discconect() {
-        try{
+        try {
             isConnected = false;
             int code = PC.getInstance().convert(ProtocolNumber.QUIT_CONNECT_203);
             GeneralRequest quitRequest = new GeneralRequest(code, null, username);
             oos.writeObject(quitRequest);
 
-            if(playerType.equals("Player"))
-            {
+            if (playerType.equals("Player")) {
                 int giveUpcode = PC.getInstance().convert(ProtocolNumber.PLAYER_GIVEUP_REQ_601);
                 GeneralRequest giveUpRequest = new GeneralRequest(giveUpcode, null, Integer.toString(typeId));
                 oos.writeObject(giveUpRequest);
             }
 
-            System.exit(0);
+            exit(0);
         } catch (Exception e) {
             board.AppendText("접속 종료 요청 에러..강제 종료 하세요");
             e.printStackTrace();
@@ -425,7 +395,7 @@ public class OthelloView implements Serializable {
                 jb[i][j].setMargin(new Insets(0, 0, 0, 0));
                 jb[i][j].setOpaque(true);
                 jb[i][j].setBackground(new Color(78, 146, 82));
-                jb[i][j].setForeground(Color.white);
+                jb[i][j].setForeground(Color.white); // FIXME: test
                 jb[i][j].setBounds(40 + 70 * j, 40 + 70 * i, 70, 70);
                 jb[i][j].setBorder(new LineBorder(new Color(0, 90, 0)));
                 jb[i][j].setFont(new Font("Courier", Font.PLAIN, 80));
@@ -491,9 +461,9 @@ public class OthelloView implements Serializable {
         jPass.setFont(new Font("Arial", Font.BOLD, 24));
         jPass.setBorder(new LineBorder(new Color(240, 230, 181)));
         jPass.addActionListener(event -> {
-            if(playerType.equals("Observer")) return;
-            if(isGameStarted == false) return;
-            if(Integer.parseInt(k.getText()) % 2 != typeId) return;
+            if (playerType.equals("Observer")) return;
+            if (isGameStarted == false) return;
+            if (Integer.parseInt(k.getText()) % 2 != typeId) return;
 
             if (shown) hide(); //패스 버튼을 누르면 무조건 경우의 수 꺼줌
             pass();
@@ -518,9 +488,9 @@ public class OthelloView implements Serializable {
         jShow.setFont(new Font("Arial", Font.BOLD, 24));
         jShow.setBorder(new LineBorder(new Color(240, 230, 181)));
         jShow.addActionListener(event -> {
-            if(playerType.equals("Observer")) return;
-            if(isGameStarted == false) return;
-            if(Integer.parseInt(k.getText()) % 2 != typeId) return;
+            if (playerType.equals("Observer")) return;
+            if (isGameStarted == false) return;
+            if (Integer.parseInt(k.getText()) % 2 != typeId) return;
 
             if (shown) hide(); //켜져있으면 꺼줌
             else show(); //꺼져있으면 켜줌
@@ -660,6 +630,16 @@ public class OthelloView implements Serializable {
     }
 
 
+    private ImageIcon getBlackStone() throws IOException {
+        var image = new ImageIcon("./OthelloClient/assets/black_stone.png");
+        return new ImageIcon(image.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
+    }
+
+    private ImageIcon getWhiteStone() throws IOException {
+        var image = new ImageIcon("./OthelloClient/assets/white_stone.png");
+        return new ImageIcon(image.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
+    }
+
     /**
      * 한 수를 두었을 때 처리를 담당하는 함수
      *
@@ -671,13 +651,20 @@ public class OthelloView implements Serializable {
         //----- 선 조치
         int f = mat[x][y]; //마우스를 누른 그 칸에 흑돌이 있는지 백돌이 있는지 돌이 없는지를 받아옴
         if (z % 2 != 0) { //현재 흑돌 차례라면
-            jb[x][y].setForeground(Color.black); //버튼의 색을 검은색으로 칠함
+            try {
+                jb[x][y].setIcon(this.getBlackStone());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             mat[x][y] = 1; //흑돌이 있음을 기록
         } else {
-            jb[x][y].setForeground(Color.white); //버튼의 색을 하얀색으로 칠함
+            try {
+                jb[x][y].setIcon(this.getWhiteStone());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             mat[x][y] = 2; //백돌이 있음을 기록
         }
-        jb[x][y].setText("⚫"); //돌 모양 텍스트로 돌이 있음을 알림
         // ----- 선 조치
 
         // ----- 후 수정
@@ -687,30 +674,38 @@ public class OthelloView implements Serializable {
             //유효하지 않은 수로, 차례가 넘어가지 않으며 돌을 다시 두어야함
             k.setText(String.valueOf(Integer.parseInt(k.getText()) - 1)); //k를 -1해서 차례가 넘어가지 않게 해줌
             mat[x][y] = f; //유효하지 않은 수이니, 원래 돌이 없던 곳엔 다시 0을, 흑돌은 1을, 백돌은 2를 기록해준다.
-            if (f == 0) jb[x][y].setText(""); //위에서 돌 모양 텍스트를 넣었기 때문에 ""로 빈칸으로 만들어줌
-            if (f == 1) jb[x][y].setForeground(Color.black); //원래 흑돌 유지
-            if (f == 2) jb[x][y].setForeground(Color.white); //원래 백돌 유지
+            if (f == 0) jb[x][y].setIcon(null);
             jNote.setText((jNote.getText()).substring(0, 12) + "  [Invalid move, try again]"); //유효하지 않은 수라고 경고메세지 출력
         } else {
             //유효한 수 이므로 차례가 넘어감
-            if(isMine)
-            {
-                try{
+            if (isMine) {
+                try {
                     GameRequest gameRequest = new GameRequest(null, username, x, y);
                     oos.writeObject(gameRequest);
-                }catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-            }
-            else
+            } else
                 k.setText(String.valueOf(Integer.parseInt(k.getText()) + 1));
             if (z % 2 != 0) jNote.setText("White's turn"); //돌을 둔 사람이 흑이면 백의 차례라고 출력
             else jNote.setText("Black's turn"); //돌을 둔 사람이 백이면 흑의 차례라고 출력
         }
         //----- 후 수정
         count(); //오셀로 판의 놓인 돌의 갯수를 갱신하고 게임 종료 조건을 검사함
+
+        OthelloView.playSound("./OthelloClient/assets/stone_effect.wav");
     }
+
+    private static void playSound(String path) {
+        try {
+            Clip clip = AudioSystem.getClip();
+            clip.open(AudioSystem.getAudioInputStream(new File(path)));
+            clip.start();
+        } catch (Exception ee) {
+            ee.printStackTrace();
+        }
+    }
+
 
     /**
      * 뒤집는 효과를 내는 함수
@@ -732,7 +727,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (int k = i + 1; k < x; k++) {
                                 mat[k][y] = 1;
-                                jb[k][y].setForeground(Color.black);
+//                                jb[k][y].setForeground(Color.black);
+                                try {
+                                    jb[k][y].setIcon(this.getBlackStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -744,7 +744,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (int k = x + 1; k < i; k++) {
                                 mat[k][y] = 1;
-                                jb[k][y].setForeground(Color.black);
+//                                jb[k][y].setForeground(Color.black);
+                                try {
+                                    jb[k][y].setIcon(this.getBlackStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -756,7 +761,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (int k = j + 1; k < y; k++) {
                                 mat[x][k] = 1;
-                                jb[x][k].setForeground(Color.black);
+//                                jb[x][k].setForeground(Color.black);
+                                try {
+                                    jb[x][k].setIcon(this.getBlackStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -768,7 +778,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (int k = y + 1; k < j; k++) {
                                 mat[x][k] = 1;
-                                jb[x][k].setForeground(Color.black);
+//                                jb[x][k].setForeground(Color.black);
+                                try {
+                                    jb[x][k].setIcon(this.getBlackStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -780,7 +795,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (m = i + 1, n = j + 1; m < x && n < y; m++, n++) {
                                 mat[m][n] = 1;
-                                jb[m][n].setForeground(Color.black);
+//                                jb[m][n].setForeground(Color.black);
+                                try {
+                                    jb[m][n].setIcon(this.getBlackStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -792,7 +812,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (m = i + 1, n = j - 1; m < x && n > y; m++, n--) {
                                 mat[m][n] = 1;
-                                jb[m][n].setForeground(Color.black);
+//                                jb[m][n].setForeground(Color.black);
+                                try {
+                                    jb[m][n].setIcon(this.getBlackStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -804,7 +829,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (m = i - 1, n = j + 1; m > x && n < y; m--, n++) {
                                 mat[m][n] = 1;
-                                jb[m][n].setForeground(Color.black);
+//                                jb[m][n].setForeground(Color.black);
+                                try {
+                                    jb[m][n].setIcon(this.getBlackStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -816,7 +846,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (m = i - 1, n = j - 1; m > x && n > y; m--, n--) {
                                 mat[m][n] = 1;
-                                jb[m][n].setForeground(Color.black);
+//                                jb[m][n].setForeground(Color.black);
+                                try {
+                                    jb[m][n].setIcon(this.getBlackStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -830,7 +865,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (int k = i + 1; k < x; k++) {
                                 mat[k][y] = 2;
-                                jb[k][y].setForeground(Color.white);
+//                                jb[k][y].setForeground(Color.white);
+                                try {
+                                    jb[k][y].setIcon(this.getWhiteStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -842,7 +882,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (int k = x + 1; k < i; k++) {
                                 mat[k][y] = 2;
-                                jb[k][y].setForeground(Color.white);
+//                                jb[k][y].setForeground(Color.white);
+                                try {
+                                    jb[k][y].setIcon(this.getWhiteStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -854,7 +899,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (int k = j + 1; k < y; k++) {
                                 mat[x][k] = 2;
-                                jb[x][k].setForeground(Color.white);
+//                                jb[x][k].setForeground(Color.white);
+                                try {
+                                    jb[x][k].setIcon(this.getWhiteStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -866,7 +916,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (int k = y + 1; k < j; k++) {
                                 mat[x][k] = 2;
-                                jb[x][k].setForeground(Color.white);
+//                                jb[x][k].setForeground(Color.white);
+                                try {
+                                    jb[x][k].setIcon(this.getWhiteStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -878,7 +933,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (m = i + 1, n = j + 1; m < x && n < y; m++, n++) {
                                 mat[m][n] = 2;
-                                jb[m][n].setForeground(Color.white);
+//                                jb[m][n].setForeground(Color.white);
+                                try {
+                                    jb[m][n].setIcon(this.getWhiteStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -890,7 +950,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (m = i + 1, n = j - 1; m < x && n > y; m++, n--) {
                                 mat[m][n] = 2;
-                                jb[m][n].setForeground(Color.white);
+//                                jb[m][n].setForeground(Color.white);
+                                try {
+                                    jb[m][n].setIcon(this.getWhiteStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -902,7 +967,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (m = i - 1, n = j + 1; m > x && n < y; m--, n++) {
                                 mat[m][n] = 2;
-                                jb[m][n].setForeground(Color.white);
+//                                jb[m][n].setForeground(Color.white);
+                                try {
+                                    jb[m][n].setIcon(this.getWhiteStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -914,7 +984,12 @@ public class OthelloView implements Serializable {
                         if (c == 0) {
                             for (m = i - 1, n = j - 1; m > x && n > y; m--, n--) {
                                 mat[m][n] = 2;
-                                jb[m][n].setForeground(Color.white);
+//                                jb[m][n].setForeground(Color.white);
+                                try {
+                                    jb[m][n].setIcon(this.getWhiteStone());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             d++;
                         }
@@ -929,14 +1004,15 @@ public class OthelloView implements Serializable {
      * 바둑판을 초기 값으로 세팅하는 메서드
      */
     private void initialise() {
-        jb[3][3].setForeground(Color.white);
-        jb[3][3].setText("⚫");
-        jb[4][4].setForeground(Color.white);
-        jb[4][4].setText("⚫");
-        jb[3][4].setForeground(Color.black);
-        jb[3][4].setText("⚫");
-        jb[4][3].setForeground(Color.black);
-        jb[4][3].setText("⚫");
+        try {
+            System.out.println(this.getWhiteStone().getImage().getSource());
+            jb[3][3].setIcon(this.getWhiteStone());
+            jb[4][4].setIcon(this.getWhiteStone());
+            jb[3][4].setIcon(this.getBlackStone());
+            jb[4][3].setIcon(this.getBlackStone());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++)
                 mat[i][j] = 0;
@@ -964,12 +1040,11 @@ public class OthelloView implements Serializable {
             else jNote.setText("Game TIED (All squares filled)"); //흑돌과 백돌의 수가 같으면 무승부 메세지 출력
             game = 1; //game이 1이 되어 버튼을 클릭해도 이벤트 처리가 되지 않도록 함
 
-            try{
+            try {
                 int endCode = PC.getInstance().convert(ProtocolNumber.GameEnd_402);
                 GeneralResponse gameOverResponse = new GeneralResponse(endCode, null, jNote.getText());
                 oos.writeObject(gameOverResponse);
-            }catch(Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -979,12 +1054,11 @@ public class OthelloView implements Serializable {
             else jNote.setText("Game TIED (No valid moves left)"); //흑돌과 백돌의 수가 같으면 무승부 메세지 출력
             game = 1; //game이 1이 되어 버튼을 클릭해도 이벤트 처리가 되지 않도록 함
 
-            try{
+            try {
                 int endCode = PC.getInstance().convert(ProtocolNumber.GameEnd_402);
                 GeneralResponse gameOverResponse = new GeneralResponse(endCode, null, jNote.getText());
                 oos.writeObject(gameOverResponse);
-            }catch(Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
