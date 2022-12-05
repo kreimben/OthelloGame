@@ -230,14 +230,14 @@ public class OthelloView implements Serializable {
                             break;
                         case 602:
                             String leftUserType = response.message;
-                            if (leftUserType == "1") {
+                            if (leftUserType.equals("1")) {
                                 board.AppendText("Player2 퇴장. Player1 승리");
                             } else {
                                 board.AppendText("Player1 퇴장. Player2 승리");
                             }
                             int endCode = PC.getInstance().convert(ProtocolNumber.GameEnd_402);
-                            GeneralResponse gameOverResponse = new GeneralResponse(endCode, null, "플레이어 퇴장. 경기 중단");
-                            oos.writeObject(gameOverResponse);
+                            GeneralRequest gameOverRequest = new GeneralRequest(endCode, null, "플레이어 퇴장. 경기 중단");
+                            oos.writeObject(gameOverRequest);
                             break;
 
                     }
@@ -352,6 +352,7 @@ public class OthelloView implements Serializable {
             oos.writeObject(quitRequest);
 
             if (playerType.equals("Player")) {
+                System.out.println("Player Quit");
                 int giveUpcode = PC.getInstance().convert(ProtocolNumber.PLAYER_GIVEUP_REQ_601);
                 GeneralRequest giveUpRequest = new GeneralRequest(giveUpcode, null, Integer.toString(typeId));
                 oos.writeObject(giveUpRequest);
@@ -1042,8 +1043,8 @@ public class OthelloView implements Serializable {
 
             try {
                 int endCode = PC.getInstance().convert(ProtocolNumber.GameEnd_402);
-                GeneralResponse gameOverResponse = new GeneralResponse(endCode, null, jNote.getText());
-                oos.writeObject(gameOverResponse);
+                GeneralRequest gameOverRequest = new GeneralRequest(endCode, null, jNote.getText());
+                oos.writeObject(gameOverRequest);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1056,8 +1057,8 @@ public class OthelloView implements Serializable {
 
             try {
                 int endCode = PC.getInstance().convert(ProtocolNumber.GameEnd_402);
-                GeneralResponse gameOverResponse = new GeneralResponse(endCode, null, jNote.getText());
-                oos.writeObject(gameOverResponse);
+                GeneralRequest gameOverRequest = new GeneralRequest(endCode, null, jNote.getText());
+                oos.writeObject(gameOverRequest);
             } catch (Exception e) {
                 e.printStackTrace();
             }
